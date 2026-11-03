@@ -1,7 +1,7 @@
 /* Sorpresa — service worker : l'appli s'ouvre même hors connexion,
    et se met à jour d'elle-même (le réseau d'abord, la copie en secours).
    Les échanges avec le serveur ne sont jamais mis en cache. */
-const VERSION = 'sorpresa-1';
+const VERSION = 'sorpresa-2';
 const FICHIERS = ['./', './index.html', './manifest.webmanifest',
   './icones/icon-192.png', './icones/icon-512.png', './icones/apple-touch-icon.png', './icones/favicon-32.png'];
 

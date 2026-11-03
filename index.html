@@ -307,9 +307,66 @@ function ecranAccueil() {
     el('h1', { style: 'margin-top:48px' }, el('span', { style: 'color:var(--ruban)' }, 'Sorpresa')),
     el('p', { class: 'chapo' }, 'Des listes d\'envies entre proches, sans gâcher la surprise.'),
     modeEmploi(),
-    el('div', { class: 'principe' }, 'Tu as reçu un lien ? Ouvre-le simplement : il te fait entrer dans le groupe.'),
+    formulaireColler(),
     el('button', { class: 'btn second large', onclick: ecranCreer }, 'Créer un groupe')
   ));
+}
+
+/* Coller un lien : invitation (#g=…) ou lien de secours (#s=…).
+   Indispensable dans l'appli installée, qui n'a pas de barre d'adresse. */
+function formulaireColler() {
+  const champ = el('input', { type: 'text', placeholder: 'Colle ici ton lien Sorpresa', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false' });
+  return el('form', { class: 'form', novalidate: true, onsubmit: async (ev) => {
+    ev.preventDefault();
+    const t = champ.value.trim();
+    const h = new URLSearchParams((t.includes('#') ? t.slice(t.indexOf('#') + 1) : t));
+    if (h.get('s')) return restaurer(h.get('s'));
+    const g = h.get('g');
+    if (g && /^[0-9a-f]{18}$/.test(g)) return ecranRejoindre(g, (h.get('p') || '').replace(/[^0-9a-f]/g, '').slice(0, 10));
+    toast('Ce n\'est pas un lien Sorpresa');
+  }},
+    el('label', {}, 'Tu as reçu un lien d\'invitation, ou tu as ton lien de secours ?'),
+    champ,
+    el('div', { class: 'rangee' }, el('button', { class: 'btn', type: 'submit' }, 'Ouvrir'))
+  );
+}
+
+/* Sur iPhone (et dans Safari sur Mac), l'appli installée ne partage pas la mémoire de Safari. */
+function memoireSeparee() {
+  const installee = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+  if (installee) return false;
+  const ua = navigator.userAgent;
+  const ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  const safariMac = /Macintosh/.test(ua) && /Safari/.test(ua) && !/Chrome|Chromium|Edg|Firefox/.test(ua);
+  return ios || safariMac;
+}
+
+function lienSecours() {
+  return location.origin + location.pathname + '#s=' + [moi.m, moi.j].concat(moi.admin ? [moi.admin] : []).join('.');
+}
+
+async function restaurer(code) {
+  const [m, j, admin] = String(code).split('.');
+  if (!/^[0-9a-f]{12}$/.test(m || '') || !/^[0-9a-f]{32}$/.test(j || '') || (admin && !/^[0-9a-f]{32}$/.test(admin))) {
+    toast('Ce lien de secours est incomplet');
+    if (!moi || !moi.m) ecranAccueil();
+    return;
+  }
+  const deja = lire();
+  if (deja && deja.m && deja.m !== m && !confirm('Ce téléphone a déjà une place dans un groupe Sorpresa. La remplacer ?')) return;
+  try {
+    const r = await appel('retrouver', { m, j, g: undefined });
+    moi = { g: r.g, m, j };
+    if (admin) moi.admin = admin;
+    garder(moi);
+    history.replaceState(null, '', location.pathname + location.search);
+    vue = 'moi';
+    await charger();
+    toast('Te revoilà !');
+  } catch (e) {
+    toast(e.statut === 403 ? 'Ce lien ne correspond plus à personne dans le groupe' : e.message);
+    if (!moi || !moi.m) ecranAccueil();
+  }
 }
 
 function modeEmploi() {
@@ -398,6 +455,16 @@ async function ecranRejoindre(g, parrain) {
     el('h1', { style: 'margin-top:40px' }, nom ? 'Tu rejoins « ' + nom + ' »' : 'Tu rejoins un groupe Sorpresa'),
     el('p', { class: 'chapo' }, 'Des listes d\'envies entre proches, sans gâcher la surprise.'),
     modeEmploi(),
+    memoireSeparee() ? el('div', { class: 'principe' },
+      el('strong', {}, 'Tu veux Sorpresa sur ton écran d\'accueil ? '),
+      'Fais-le avant d\'entrer : l\'appli installée ne voit pas ce qui se passe ici. ',
+      'Copie ce lien, ajoute la page à l\'écran d\'accueil (bouton Partager), ouvre l\'appli et colle-le.',
+      el('div', { style: 'margin-top:10px' },
+        el('button', { class: 'btn second', type: 'button', onclick: async () => {
+          try { await navigator.clipboard.writeText(location.href); toast('Lien copié'); }
+          catch (e) { prompt('Copie ce lien :', location.href); }
+        }}, 'Copier le lien'))
+    ) : null,
     form
   ));
 }
@@ -639,6 +706,16 @@ function vueReglages() {
     el('p', {}, el('strong', {}, 'Sur l\'écran d\'accueil'), el('br'),
       el('span', { class: 'discret' }, 'Sur iPhone : bouton Partager de Safari, puis « Sur l\'écran d\'accueil ». Sur Android : menu ⋮ de Chrome, puis « Ajouter à l\'écran d\'accueil ».'))));
 
+  bloc.append(el('div', { class: 'reglage' },
+    el('p', {}, el('strong', {}, 'Mon lien de secours'), el('br'),
+      el('span', { class: 'discret' }, 'Range-le parmi tes mots de passe. Sur un nouveau téléphone, installe Sorpresa, ouvre-la et colle-le : tu retrouves ta liste'
+        + (moi.admin ? ' et la gestion du groupe' : '') + '. Il te représente : ne le donne à personne.')),
+    el('button', { class: 'btn second', onclick: async () => {
+      const url = lienSecours();
+      try { await navigator.clipboard.writeText(url); toast('Lien de secours copié'); }
+      catch (e) { prompt('Copie ton lien de secours :', url); }
+    }}, 'Copier mon lien de secours')));
+
   if (moi.admin && d.admin) bloc.append(blocGestion());
 
   bloc.append(el('div', { class: 'reglage' },
@@ -718,6 +795,7 @@ async function quitter() {
 /* ---------- Démarrage ---------- */
 function demarrer() {
   const h = new URLSearchParams(location.hash.slice(1));
+  if (h.get('s')) return restaurer(h.get('s'));
   const g = h.get('g');
   if (g && /^[0-9a-f]{18}$/.test(g)) {
     if (moi && moi.g === g && moi.m) {
