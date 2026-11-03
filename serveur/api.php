@@ -198,6 +198,8 @@ function effacer_membre(PDO $db, string $groupe, string $id): void {
     $db->prepare('DELETE FROM envies WHERE groupe = ? AND res_membre = ? AND retiree <> \'\'')->execute([$groupe, $id]);
     $db->prepare('UPDATE envies SET res_membre = \'\', res_date = \'\' WHERE groupe = ? AND res_membre = ?')->execute([$groupe, $id]);
     $db->prepare('DELETE FROM membres WHERE groupe = ? AND id = ?')->execute([$groupe, $id]);
+    // Un groupe dont la dernière personne est partie disparaît avec tout son contenu.
+    $db->prepare('DELETE FROM groupes WHERE code = ? AND NOT EXISTS (SELECT 1 FROM membres WHERE groupe = ?)')->execute([$groupe, $groupe]);
 }
 
 /* ---------- Lecture de la requête ---------- */
@@ -221,6 +223,8 @@ try {
     /* ----- Créer un groupe -----
        Le tout premier groupe peut être créé librement ; ensuite, il faut la clé de gestion d'un groupe existant. */
     if ($action === 'creer_groupe' && $methode === 'POST') {
+        // Un groupe resté sans personne (créé puis quitté) ne compte pas.
+        $db->exec('DELETE FROM groupes WHERE NOT EXISTS (SELECT 1 FROM membres WHERE membres.groupe = groupes.code)');
         $nb = (int)$db->query('SELECT COUNT(*) FROM groupes')->fetchColumn();
         if ($nb > 0) {
             $ok = false;
