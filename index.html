@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sorpresa</title>
+<meta name="description" content="Des listes d'envies entre proches, sans gâcher la surprise.">
+<meta name="theme-color" content="#a3203a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Sorpresa">
+<meta name="referrer" content="no-referrer">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icones/favicon-32.png">
+<link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+<style>
+:root {
+  --fond: #fbf6ef;
+  --carte: #ffffff;
+  --encre: #2a1f1d;
+  --doux: #6f625d;
+  --trait: #e8ddd2;
+  --ruban: #a3203a;
+  --ruban-fonce: #861a30;
+  --ruban-pale: #f6e3e6;
+  --or: #b88a2e;
+  --or-pale: #f6eedc;
+  --vert: #2f6b4f;
+  --vert-pale: #e3efe8;
+  --ombre: 0 1px 2px rgba(60, 30, 20, .06), 0 4px 14px rgba(60, 30, 20, .06);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fond: #1c1716;
+    --carte: #272120;
+    --encre: #f3ebe6;
+    --doux: #b3a7a1;
+    --trait: #3b3330;
+    --ruban: #e0566f;
+    --ruban-fonce: #c94660;
+    --ruban-pale: #3e2328;
+    --or: #d9b15c;
+    --or-pale: #3a3122;
+    --vert: #7cc29d;
+    --vert-pale: #223229;
+    --ombre: none;
+  }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 17px;
+  line-height: 1.45;
+  background: var(--fond);
+  color: var(--encre);
+  min-height: 100vh;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+button, input, textarea { font: inherit; color: inherit; }
+a { color: var(--ruban); }
+
+.page { max-width: 560px; margin: 0 auto; padding: 0 16px 48px; }
+
+/* En-tête */
+.entete {
+  position: sticky; top: 0; z-index: 5;
+  background: var(--fond);
+  padding: calc(env(safe-area-inset-top) + 14px) 16px 0;
+  max-width: 560px; margin: 0 auto;
+}
+.entete-haut { display: flex; align-items: center; gap: 10px; }
+.marque { font-size: 1.5rem; font-weight: 750; letter-spacing: -.02em; color: var(--ruban); }
+.groupe-nom { color: var(--doux); font-size: .95rem; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.icone-btn {
+  border: 1px solid var(--trait); background: var(--carte); border-radius: 999px;
+  width: 40px; height: 40px; display: grid; place-items: center; cursor: pointer; font-size: 1.1rem;
+}
+
+/* Onglets des personnes */
+.onglets {
+  display: flex; gap: 8px; overflow-x: auto; padding: 14px 0 12px;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  border-bottom: 1px solid var(--trait);
+}
+.onglets::-webkit-scrollbar { display: none; }
+.onglet {
+  flex: none; border: 1px solid var(--trait); background: var(--carte);
+  border-radius: 999px; padding: 7px 14px; cursor: pointer; white-space: nowrap; font-size: .95rem;
+}
+.onglet .nb { color: var(--doux); margin-left: 4px; font-size: .85rem; }
+.onglet.actif { background: var(--ruban); border-color: var(--ruban); color: #fff; }
+.onglet.actif .nb { color: rgba(255,255,255,.8); }
+.onglet.offrir { border-style: dashed; }
+.onglet.offrir.actif { border-style: solid; }
+.onglet .point { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--or); margin-left: 6px; vertical-align: middle; }
+
+h1 { font-size: 1.6rem; line-height: 1.2; letter-spacing: -.02em; margin: 22px 0 6px; }
+h2 { font-size: 1.15rem; margin: 26px 0 10px; }
+.chapo { color: var(--doux); margin-bottom: 16px; }
+.discret { color: var(--doux); font-size: .9rem; }
+
+/* Cartes d'envie */
+.envie {
+  background: var(--carte); border: 1px solid var(--trait); border-radius: 14px;
+  padding: 14px 16px; margin-bottom: 10px; box-shadow: var(--ombre);
+}
+.envie-titre { font-weight: 650; font-size: 1.05rem; }
+.envie-precision { color: var(--doux); margin-top: 2px; white-space: pre-wrap; }
+.envie-lien { display: inline-block; margin-top: 6px; font-size: .95rem; text-decoration: none; word-break: break-all; }
+.envie-pied { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.envie.prise { opacity: .72; }
+.envie.retiree { border-color: var(--or); background: var(--or-pale); }
+.avis { font-size: .9rem; margin-top: 8px; color: var(--or); font-weight: 600; }
+.qui { font-size: .85rem; color: var(--doux); margin-bottom: 4px; }
+
+.etiquette {
+  display: inline-block; font-size: .85rem; font-weight: 600; padding: 4px 10px; border-radius: 999px;
+}
+.etiquette.moi { background: var(--vert-pale); color: var(--vert); }
+.etiquette.autre { background: var(--trait); color: var(--doux); }
+
+/* Boutons */
+.btn {
+  border: none; border-radius: 999px; padding: 10px 18px; cursor: pointer; font-weight: 600;
+  background: var(--ruban); color: #fff; font-size: .98rem;
+}
+.btn:active { background: var(--ruban-fonce); }
+.btn.large { width: 100%; padding: 14px 18px; font-size: 1.05rem; }
+.btn.second { background: transparent; color: var(--encre); border: 1px solid var(--trait); }
+.btn.lien { background: none; color: var(--doux); padding: 8px 6px; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+.btn.danger { background: transparent; color: var(--ruban); border: 1px solid var(--ruban); }
+.btn:disabled { opacity: .5; cursor: default; }
+
+/* Formulaires */
+.form { background: var(--carte); border: 1px solid var(--trait); border-radius: 14px; padding: 16px; margin-bottom: 16px; box-shadow: var(--ombre); }
+label { display: block; font-weight: 600; font-size: .95rem; margin: 12px 0 6px; }
+label:first-child { margin-top: 0; }
+label .opt { font-weight: 400; color: var(--doux); }
+input[type=text], input[type=url], textarea {
+  width: 100%; border: 1px solid var(--trait); border-radius: 10px; padding: 11px 12px;
+  background: var(--fond); font-size: 16px;
+}
+textarea { resize: vertical; min-height: 64px; }
+input:focus, textarea:focus { outline: 2px solid var(--ruban); outline-offset: 1px; border-color: transparent; }
+.rangee { display: flex; gap: 10px; margin-top: 16px; }
+.rangee .btn { flex: 1; }
+
+.ajout {
+  width: 100%; border: 1.5px dashed var(--ruban); background: transparent; color: var(--ruban);
+  border-radius: 14px; padding: 14px; font-weight: 650; cursor: pointer; margin-bottom: 16px; font-size: 1rem;
+}
+
+.principe {
+  background: var(--ruban-pale); border-radius: 12px; padding: 10px 14px; font-size: .92rem; margin-bottom: 16px;
+}
+.bandeau {
+  background: var(--or-pale); border: 1px solid var(--or); border-radius: 12px; padding: 10px 14px;
+  font-size: .95rem; margin: 14px 0 0; cursor: pointer; text-align: left; width: 100%;
+}
+
+.vide { text-align: center; color: var(--doux); padding: 34px 10px; }
+.vide .grand { font-size: 2.2rem; margin-bottom: 6px; }
+
+ol.mode { margin: 6px 0 22px 22px; }
+ol.mode li { margin-bottom: 8px; }
+
+.reglage { background: var(--carte); border: 1px solid var(--trait); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; }
+.reglage p { margin-bottom: 10px; }
+.membre { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid var(--trait); }
+.membre:first-of-type { border-top: none; }
+
+.retour { margin: 14px 0 0; }
+
+#toast {
+  position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(20px);
+  background: var(--encre); color: var(--fond); padding: 11px 18px; border-radius: 999px; font-size: .95rem;
+  opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; max-width: calc(100% - 32px); text-align: center; z-index: 20;
+}
+#toast.visible { opacity: 1; transform: translateX(-50%); }
+
+.chargement { text-align: center; padding: 60px 0; color: var(--doux); }
+</style>
+</head>
+<body>
+<div id="app"><div class="chargement">Un instant…</div></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+
+/* Adresse du petit serveur (même hébergement que Grazie, dans www/sorpresa). */
+const API_PAR_DEFAUT = 'https://azertida.alwaysdata.net/sorpresa/api.php';
+const EN_LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname);
+const API = (EN_LOCAL && new URLSearchParams(location.search).get('api')) || API_PAR_DEFAUT;
+const CLE = 'sorpresa';
+
+/* ---------- Mémoire du téléphone ---------- */
+function lire() {
+  try { return JSON.parse(localStorage.getItem(CLE)) || null; } catch (e) { return null; }
+}
+function garder(s) {
+  try { localStorage.setItem(CLE, JSON.stringify(s)); } catch (e) {}
+}
+function oublier() {
+  try { localStorage.removeItem(CLE); } catch (e) {}
+}
+
+let moi = lire();        // { g, m, j, admin? }
+let donnees = null;      // dernière réponse de « liste »
+let vue = 'moi';         // 'moi', 'offrir', 'reglages' ou l'alias d'une personne
+let edition = null;      // id de l'envie en cours de modification, ou 'nouvelle'
+
+/* ---------- Petits outils ---------- */
+const app = document.getElementById('app');
+
+function el(balise, attrs, ...enfants) {
+  const n = document.createElement(balise);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v === false || v == null) continue;
+    if (k === 'class') n.className = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v === true ? '' : v);
+  }
+  for (const e of enfants.flat()) {
+    if (e == null || e === false) continue;
+    n.append(e instanceof Node ? e : document.createTextNode(String(e)));
+  }
+  return n;
+}
+
+let minuteur;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('visible');
+  clearTimeout(minuteur);
+  minuteur = setTimeout(() => t.classList.remove('visible'), 2600);
+}
+
+async function appel(action, champs = {}, lecture = false) {
+  const base = { action, ...champs };
+  if (moi && moi.g && !('g' in champs)) base.g = moi.g;
+  if (moi && moi.m && !('m' in champs)) { base.m = moi.m; base.j = moi.j; }
+  if (moi && moi.admin) base.admin = moi.admin;
+  for (const k of Object.keys(base)) if (base[k] === undefined) delete base[k];
+  let rep;
+  try {
+    rep = lecture
+      ? await fetch(API + '?' + new URLSearchParams(base), { cache: 'no-store' })
+      : await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(base) });
+  } catch (e) {
+    throw new Error('Pas de connexion pour l\'instant');
+  }
+  let corps = {};
+  try { corps = await rep.json(); } catch (e) {}
+  if (!rep.ok) {
+    const err = new Error(corps.erreur || 'Le serveur ne répond pas');
+    err.statut = rep.status;
+    throw err;
+  }
+  return corps;
+}
+
+function domaine(url) {
+  try { return new URL(url).hostname.replace(/^www\./, ''); } catch (e) { return 'lien'; }
+}
+
+function lienSur(url) {
+  return /^https?:\/\//i.test(url) ? url : null;
+}
+
+function lienInvitation() {
+  const base = location.origin + location.pathname;
+  const p = donnees && donnees.moi ? '&p=' + donnees.moi : '';
+  return base + '#g=' + moi.g + p;
+}
+
+/* ---------- Chargement ---------- */
+async function charger() {
+  try {
+    donnees = await appel('liste', {}, true);
+  } catch (e) {
+    if (e.statut === 404 && moi && moi.m) {
+      // Le lien du groupe a changé : la place de membre suffit pour le retrouver.
+      try {
+        const r = await appel('retrouver', { m: moi.m, j: moi.j });
+        moi.g = r.g; garder(moi);
+        donnees = await appel('liste', {}, true);
+      } catch (e2) {
+        return ecranPerdu();
+      }
+    } else if (e.statut === 403) {
+      return ecranPerdu();
+    } else {
+      if (!donnees) { app.replaceChildren(el('div', { class: 'page' }, el('div', { class: 'vide' }, el('div', { class: 'grand' }, '📡'), e.message, el('div', { style: 'margin-top:16px' }, el('button', { class: 'btn', onclick: charger }, 'Réessayer'))))); }
+      else toast(e.message);
+      return;
+    }
+  }
+  if (vue !== 'moi' && vue !== 'offrir' && vue !== 'reglages' && !donnees.personnes.some(p => p.p === vue)) vue = 'moi';
+  rendre();
+}
+
+/* ---------- Écrans hors groupe ---------- */
+function ecranAccueil() {
+  app.replaceChildren(el('div', { class: 'page' },
+    el('h1', { style: 'margin-top:48px' }, el('span', { style: 'color:var(--ruban)' }, 'Sorpresa')),
+    el('p', { class: 'chapo' }, 'Des listes d\'envies entre proches, sans gâcher la surprise.'),
+    modeEmploi(),
+    el('div', { class: 'principe' }, 'Tu as reçu un lien ? Ouvre-le simplement : il te fait entrer dans le groupe.'),
+    el('button', { class: 'btn second large', onclick: ecranCreer }, 'Créer un groupe')
+  ));
+}
+
+function modeEmploi() {
+  return el('ol', { class: 'mode' },
+    el('li', {}, el('strong', {}, 'Ajoute tes envies'), ' : un titre, une précision, un lien si tu veux.'),
+    el('li', {}, el('strong', {}, 'Réserve ce que tu offres'), ' dans les listes des autres. Seuls les autres le voient, jamais la personne concernée.'),
+    el('li', {}, el('strong', {}, 'Quand tu reçois un cadeau'), ', retire-le de ta liste.')
+  );
+}
+
+function ecranCreer() {
+  const nom = el('input', { type: 'text', maxlength: 40, placeholder: 'Ex. : La famille', autocomplete: 'off' });
+  const prenom = el('input', { type: 'text', maxlength: 20, placeholder: 'Ton prénom', autocomplete: 'given-name' });
+  const btn = el('button', { class: 'btn large', type: 'submit' }, 'Créer le groupe');
+  const form = el('form', { class: 'form', onsubmit: async (ev) => {
+    ev.preventDefault();
+    if (!prenom.value.trim()) return toast('Il manque ton prénom');
+    btn.disabled = true;
+    try {
+      const ancien = lire();
+      const champs = { nom: nom.value };
+      if (ancien && ancien.admin) champs.cle_existante = ancien.admin;
+      const c = await appel('creer_groupe', { ...champs, g: undefined, m: undefined });
+      const r = await appel('rejoindre', { g: c.g, prenom: prenom.value, m: undefined });
+      moi = { g: c.g, m: r.m, j: r.j, admin: c.admin };
+      garder(moi);
+      vue = 'moi';
+      await charger();
+      toast('Groupe créé. Invite les autres depuis ⚙︎');
+    } catch (e) {
+      btn.disabled = false;
+      toast(e.statut === 403 ? 'Seule la personne qui gère un groupe peut en créer un autre' : e.message);
+    }
+  }},
+    el('label', {}, 'Nom du groupe ', el('span', { class: 'opt' }, '(facultatif)')), nom,
+    el('label', {}, 'Ton prénom'), prenom,
+    el('div', { class: 'rangee' }, btn)
+  );
+  app.replaceChildren(el('div', { class: 'page' },
+    el('h1', { style: 'margin-top:40px' }, 'Créer un groupe'),
+    el('p', { class: 'chapo' }, 'Tu en seras la gestionnaire : toi seule pourras voir qui est inscrit, changer le lien ou retirer quelqu\'un.'),
+    form,
+    el('button', { class: 'btn lien', onclick: ecranAccueil }, '← Retour')
+  ));
+  prenom.focus();
+}
+
+async function ecranRejoindre(g, parrain) {
+  let nom = '';
+  try { nom = (await appel('apercu', { g, m: undefined }, true)).nom; }
+  catch (e) {
+    if (e.statut === 404) {
+      app.replaceChildren(el('div', { class: 'page' }, el('div', { class: 'vide' },
+        el('div', { class: 'grand' }, '🎁'),
+        'Ce lien ne mène plus nulle part. Demande le nouveau à la personne qui t\'a invitée.')));
+      return;
+    }
+    app.replaceChildren(el('div', { class: 'page' }, el('div', { class: 'vide' }, e.message)));
+    return;
+  }
+  const deja = lire();
+  const prenom = el('input', { type: 'text', maxlength: 20, placeholder: 'Ton prénom', autocomplete: 'given-name' });
+  const btn = el('button', { class: 'btn large', type: 'submit' }, 'Entrer');
+  const form = el('form', { class: 'form', onsubmit: async (ev) => {
+    ev.preventDefault();
+    if (!prenom.value.trim()) return toast('Il manque ton prénom');
+    if (deja && deja.m && !confirm('Ce téléphone fait déjà partie d\'un autre groupe Sorpresa. Le remplacer par celui-ci ?')) return;
+    btn.disabled = true;
+    try {
+      const r = await appel('rejoindre', { g, prenom: prenom.value, parrain: parrain || '', m: undefined });
+      moi = { g, m: r.m, j: r.j };
+      garder(moi);
+      history.replaceState(null, '', location.pathname + location.search);
+      vue = 'moi';
+      await charger();
+      toast('Bienvenue ! Ajoute ta première envie.');
+    } catch (e) {
+      btn.disabled = false;
+      toast(e.message);
+    }
+  }},
+    el('label', {}, 'Ton prénom, tel que les autres te connaissent'), prenom,
+    el('div', { class: 'rangee' }, btn)
+  );
+  app.replaceChildren(el('div', { class: 'page' },
+    el('h1', { style: 'margin-top:40px' }, nom ? 'Tu rejoins « ' + nom + ' »' : 'Tu rejoins un groupe Sorpresa'),
+    el('p', { class: 'chapo' }, 'Des listes d\'envies entre proches, sans gâcher la surprise.'),
+    modeEmploi(),
+    form
+  ));
+}
+
+function ecranPerdu() {
+  app.replaceChildren(el('div', { class: 'page' }, el('div', { class: 'vide' },
+    el('div', { class: 'grand' }, '🎁'),
+    el('p', {}, 'Ce téléphone ne fait plus partie du groupe.'),
+    el('p', { class: 'discret', style: 'margin-top:8px' }, 'Pour y revenir, ouvre à nouveau le lien d\'invitation.'),
+    el('div', { style: 'margin-top:18px' }, el('button', { class: 'btn second', onclick: () => { oublier(); moi = null; ecranAccueil(); } }, 'Repartir de zéro'))
+  )));
+}
+
+/* ---------- Écran principal ---------- */
+function rendre() {
+  const d = donnees;
+  const autres = d.personnes.filter(p => !p.moi);
+  const mesEnvies = d.envies.filter(e => e.mienne);
+  const mesRes = d.envies.filter(e => e.ma_reservation);
+  const retirees = d.envies.filter(e => e.retiree);
+  const parPersonne = (alias) => d.envies.filter(e => e.p === alias && !e.retiree);
+
+  const onglet = (cle, libelle, nb, extra) => el('button', {
+    class: 'onglet' + (vue === cle ? ' actif' : '') + (extra ? ' ' + extra : ''),
+    onclick: () => { vue = cle; edition = null; rendre(); window.scrollTo(0, 0); }
+  }, libelle, nb != null ? el('span', { class: 'nb' }, nb) : null,
+     cle === 'offrir' && retirees.length ? el('span', { class: 'point', title: 'À voir' }) : null);
+
+  const entete = el('header', { class: 'entete' },
+    el('div', { class: 'entete-haut' },
+      el('div', { class: 'marque' }, 'Sorpresa'),
+      el('div', { class: 'groupe-nom' }, d.nom || ''),
+      el('button', { class: 'icone-btn', 'aria-label': 'Actualiser', onclick: async () => { await charger(); toast('À jour'); } }, '↻'),
+      el('button', { class: 'icone-btn', 'aria-label': 'Réglages', onclick: () => { vue = 'reglages'; rendre(); } }, '⚙︎')
+    ),
+    el('nav', { class: 'onglets' },
+      onglet('moi', 'Ma liste', mesEnvies.length),
+      autres.map(p => onglet(p.p, p.prenom, parPersonne(p.p).length)),
+      onglet('offrir', 'À offrir', mesRes.filter(e => !e.retiree).length, 'offrir')
+    )
+  );
+
+  let contenu;
+  if (vue === 'moi') contenu = vueMaListe(mesEnvies, autres.length === 0);
+  else if (vue === 'offrir') contenu = vueOffrir(mesRes, retirees);
+  else if (vue === 'reglages') contenu = vueReglages();
+  else {
+    const p = d.personnes.find(x => x.p === vue);
+    contenu = vueAutre(p, parPersonne(p.p), retirees.filter(e => e.p === p.p));
+  }
+
+  const bandeau = (retirees.length && vue !== 'offrir' && vue !== 'reglages')
+    ? el('button', { class: 'bandeau', onclick: () => { vue = 'offrir'; rendre(); } },
+        retirees.length === 1 ? '⚠︎ Une envie que tu avais réservée a été retirée. Voir' : '⚠︎ ' + retirees.length + ' envies que tu avais réservées ont été retirées. Voir')
+    : null;
+
+  app.replaceChildren(entete, el('main', { class: 'page' }, bandeau, contenu));
+}
+
+/* Ma liste */
+function vueMaListe(envies, seule) {
+  const bloc = el('div');
+  bloc.append(el('div', { class: 'principe', style: 'margin-top:16px' },
+    'Tu ne sauras jamais si une de tes envies est réservée : c\'est tout le principe.'));
+
+  if (edition === 'nouvelle') bloc.append(formulaire(null));
+  else bloc.append(el('button', { class: 'ajout', onclick: () => { edition = 'nouvelle'; rendre(); } }, '＋ Ajouter une envie'));
+
+  if (!envies.length && edition !== 'nouvelle') {
+    bloc.append(el('div', { class: 'vide' }, el('div', { class: 'grand' }, '🎁'),
+      'Ta liste est vide.', el('br'), 'Un film, un livre, une édition précise : note ce qui te ferait plaisir.'));
+  }
+  for (const e of envies) {
+    if (edition === e.id) { bloc.append(formulaire(e)); continue; }
+    bloc.append(el('div', { class: 'envie' },
+      contenuEnvie(e),
+      el('div', { class: 'envie-pied' },
+        el('button', { class: 'btn second', onclick: () => { edition = e.id; rendre(); } }, 'Modifier'),
+        el('button', { class: 'btn lien', onclick: () => retirer(e) }, 'Retirer')
+      )
+    ));
+  }
+  if (seule) {
+    bloc.append(el('p', { class: 'discret', style: 'margin-top:18px;text-align:center' },
+      'Tu es seule dans le groupe pour l\'instant. ',
+      el('button', { class: 'btn lien', style: 'padding:0', onclick: inviter }, 'Inviter quelqu\'un')));
+  }
+  return bloc;
+}
+
+function contenuEnvie(e) {
+  const url = e.lien && lienSur(e.lien);
+  return [
+    el('div', { class: 'envie-titre' }, e.titre),
+    e.precision ? el('div', { class: 'envie-precision' }, e.precision) : null,
+    url ? el('a', { class: 'envie-lien', href: url, target: '_blank', rel: 'noopener noreferrer' }, 'Voir sur ' + domaine(url) + ' ↗') : null
+  ];
+}
+
+function formulaire(e) {
+  const titre = el('input', { type: 'text', maxlength: 80, placeholder: 'Ex. : In the Mood for Love', value: e ? e.titre : '' });
+  const precision = el('textarea', { maxlength: 200, placeholder: 'Ex. : le Blu-ray 4K, pas le DVD' });
+  precision.value = e ? e.precision : '';
+  const lien = el('input', { type: 'url', maxlength: 500, placeholder: 'https://…', inputmode: 'url', value: e ? e.lien : '' });
+  const btn = el('button', { class: 'btn', type: 'submit' }, e ? 'Enregistrer' : 'Ajouter');
+  const form = el('form', { class: 'form', novalidate: true, onsubmit: async (ev) => {
+    ev.preventDefault();
+    if (!titre.value.trim()) return toast('Il manque le titre');
+    let l = lien.value.trim();
+    if (l && !/^https?:\/\//i.test(l)) l = 'https://' + l;
+    btn.disabled = true;
+    try {
+      if (e) await appel('modifier', { id: e.id, titre: titre.value, precision: precision.value, lien: l });
+      else await appel('ajouter', { titre: titre.value, precision: precision.value, lien: l });
+      edition = null;
+      await charger();
+      toast(e ? 'Envie modifiée' : 'Envie ajoutée');
+    } catch (err) {
+      btn.disabled = false;
+      toast(err.message);
+    }
+  }},
+    el('label', {}, 'Ton envie'), titre,
+    el('label', {}, 'Précision ', el('span', { class: 'opt' }, '(facultatif)')), precision,
+    el('label', {}, 'Lien ', el('span', { class: 'opt' }, '(facultatif)')), lien,
+    el('div', { class: 'rangee' },
+      el('button', { class: 'btn second', type: 'button', onclick: () => { edition = null; rendre(); } }, 'Annuler'),
+      btn)
+  );
+  setTimeout(() => titre.focus(), 0);
+  return form;
+}
+
+async function retirer(e) {
+  if (!confirm('Retirer « ' + e.titre + ' » de ta liste ?\n\nÀ faire quand tu l\'as reçu, ou si tu n\'en as plus envie.')) return;
+  try { await appel('retirer', { id: e.id }); await charger(); toast('Envie retirée'); }
+  catch (err) { toast(err.message); }
+}
+
+/* Liste de quelqu'un d'autre */
+function vueAutre(p, envies, retirees) {
+  const bloc = el('div');
+  bloc.append(el('h1', {}, 'Les envies de ' + p.prenom));
+  bloc.append(el('p', { class: 'chapo' }, p.prenom + ' ne voit pas ce qui est réservé. Les autres, si : ça évite les doublons.'));
+  for (const e of retirees) bloc.append(carteRetiree(e, false));
+  if (!envies.length) {
+    bloc.append(el('div', { class: 'vide' }, el('div', { class: 'grand' }, '🫙'), p.prenom + ' n\'a encore rien noté.'));
+  }
+  // Ce qui est libre d'abord, puis ce que je réserve, puis ce que d'autres réservent.
+  const ordre = (e) => e.ma_reservation ? 1 : (e.reservee ? 2 : 0);
+  for (const e of [...envies].sort((a, b) => ordre(a) - ordre(b))) bloc.append(carteAutre(e));
+  return bloc;
+}
+
+function carteAutre(e, avecPrenom) {
+  let pied;
+  if (e.ma_reservation) {
+    pied = el('div', { class: 'envie-pied' },
+      el('span', { class: 'etiquette moi' }, '✓ Tu l\'offres'),
+      el('button', { class: 'btn lien', onclick: () => liberer(e) }, 'Annuler'));
+  } else if (e.reservee) {
+    pied = el('div', { class: 'envie-pied' },
+      el('span', { class: 'etiquette autre' }, 'Réservée' + (e.res_prenom ? ' par ' + e.res_prenom : '')));
+  } else {
+    pied = el('div', { class: 'envie-pied' },
+      el('button', { class: 'btn', onclick: () => reserver(e) }, 'Je l\'offre'));
+  }
+  return el('div', { class: 'envie' + (e.reservee && !e.ma_reservation ? ' prise' : '') },
+    avecPrenom ? el('div', { class: 'qui' }, 'Pour ' + avecPrenom) : null,
+    contenuEnvie(e),
+    e.ma_reservation && e.modifiee_apres ? el('div', { class: 'avis' }, 'Modifiée depuis ta réservation : vérifie la précision.') : null,
+    pied);
+}
+
+function carteRetiree(e, avecPrenom) {
+  return el('div', { class: 'envie retiree' },
+    avecPrenom ? el('div', { class: 'qui' }, 'Pour ' + e.prenom) : null,
+    contenuEnvie(e),
+    el('div', { class: 'avis' }, e.prenom + ' l\'a retirée de sa liste. Tu l\'avais réservée.'),
+    el('div', { class: 'envie-pied' },
+      el('button', { class: 'btn second', onclick: () => vu(e) }, 'Compris')));
+}
+
+async function reserver(e) {
+  try { await appel('reserver', { id: e.id }); await charger(); toast('Réservé. Personne d\'autre ne l\'offrira.'); }
+  catch (err) { toast(err.message); await charger(); }
+}
+async function liberer(e) {
+  if (!confirm('Annuler ta réservation de « ' + e.titre + ' » ? Quelqu\'un d\'autre pourra la prendre.')) return;
+  try { await appel('liberer', { id: e.id }); await charger(); toast('Réservation annulée'); }
+  catch (err) { toast(err.message); }
+}
+async function vu(e) {
+  try { await appel('vu', { id: e.id }); await charger(); }
+  catch (err) { toast(err.message); }
+}
+
+/* À offrir : toutes mes réservations */
+function vueOffrir(mesRes, retirees) {
+  const bloc = el('div');
+  bloc.append(el('h1', {}, 'À offrir'));
+  bloc.append(el('p', { class: 'chapo' }, 'Tout ce que tu as réservé, personne par personne.'));
+  for (const e of retirees) bloc.append(carteRetiree(e, true));
+  const actives = mesRes.filter(e => !e.retiree);
+  if (!actives.length && !retirees.length) {
+    bloc.append(el('div', { class: 'vide' }, el('div', { class: 'grand' }, '🛍️'),
+      'Rien de réservé pour l\'instant.', el('br'), 'Ouvre la liste de quelqu\'un et touche « Je l\'offre ».'));
+  }
+  for (const p of donnees.personnes) {
+    const siennes = actives.filter(e => e.p === p.p);
+    if (!siennes.length) continue;
+    bloc.append(el('h2', {}, 'Pour ' + p.prenom));
+    for (const e of siennes) bloc.append(carteAutre(e));
+  }
+  return bloc;
+}
+
+/* Réglages */
+function vueReglages() {
+  const d = donnees;
+  const moiP = d.personnes.find(p => p.moi);
+  const bloc = el('div');
+  bloc.append(el('h1', {}, 'Réglages'));
+
+  bloc.append(el('div', { class: 'reglage' },
+    el('p', {}, el('strong', {}, 'Inviter quelqu\'un'), el('br'), el('span', { class: 'discret' }, 'Envoie ce lien à une personne du groupe : elle choisira son prénom en l\'ouvrant.')),
+    el('button', { class: 'btn', onclick: inviter }, 'Partager le lien')));
+
+  const champPrenom = el('input', { type: 'text', maxlength: 20, value: moiP ? moiP.prenom : '' });
+  bloc.append(el('form', { class: 'reglage', onsubmit: async (ev) => {
+    ev.preventDefault();
+    try { await appel('mon_prenom', { prenom: champPrenom.value }); await charger(); vue = 'reglages'; rendre(); toast('Prénom changé'); }
+    catch (err) { toast(err.message); }
+  }},
+    el('label', {}, 'Mon prénom'), champPrenom,
+    el('div', { class: 'rangee' }, el('button', { class: 'btn second', type: 'submit' }, 'Changer'))));
+
+  bloc.append(el('div', { class: 'reglage' },
+    el('p', {}, el('strong', {}, 'Sur l\'écran d\'accueil'), el('br'),
+      el('span', { class: 'discret' }, 'Sur iPhone : bouton Partager de Safari, puis « Sur l\'écran d\'accueil ». Sur Android : menu ⋮ de Chrome, puis « Ajouter à l\'écran d\'accueil ».'))));
+
+  if (moi.admin && d.admin) bloc.append(blocGestion());
+
+  bloc.append(el('div', { class: 'reglage' },
+    el('p', {}, el('strong', {}, 'Quitter le groupe'), el('br'),
+      el('span', { class: 'discret' }, 'Ta liste et tes réservations sont effacées. Si tu avais réservé quelque chose, c\'est de nouveau libre.')),
+    el('button', { class: 'btn danger', onclick: quitter }, 'Quitter le groupe')));
+
+  bloc.append(el('button', { class: 'btn lien retour', onclick: () => { vue = 'moi'; rendre(); } }, '← Retour à ma liste'));
+  return bloc;
+}
+
+function blocGestion() {
+  const zone = el('div', { class: 'reglage' });
+  const champNom = el('input', { type: 'text', maxlength: 40, value: donnees.nom || '' });
+  const liste = el('div', {}, el('p', { class: 'discret' }, 'Chargement des membres…'));
+  zone.append(
+    el('p', {}, el('strong', {}, 'Gestion du groupe'), el('br'),
+      el('span', { class: 'discret' }, 'Toi seule vois cette partie : ce téléphone garde la clé de gestion.')),
+    el('form', { onsubmit: async (ev) => {
+      ev.preventDefault();
+      try { await appel('renommer', { nom: champNom.value }); await charger(); vue = 'reglages'; rendre(); toast('Groupe renommé'); }
+      catch (err) { toast(err.message); }
+    }},
+      el('label', {}, 'Nom du groupe'), champNom,
+      el('div', { class: 'rangee' }, el('button', { class: 'btn second', type: 'submit' }, 'Renommer'))),
+    el('label', { style: 'margin-top:18px' }, 'Membres'), liste,
+    el('label', { style: 'margin-top:18px' }, 'Le lien a circulé trop loin ?'),
+    el('p', { class: 'discret' }, 'Un nouveau lien rend l\'ancien inutilisable. Les membres actuels suivent automatiquement.'),
+    el('button', { class: 'btn second', onclick: changerLien }, 'Changer le lien du groupe')
+  );
+  appel('membres').then(r => {
+    liste.replaceChildren(...r.membres.map(m => el('div', { class: 'membre' },
+      el('div', {}, m.prenom + (m.moi ? ' (toi)' : ''),
+        el('div', { class: 'discret' }, 'Arrivée le ' + new Date(m.arrivee).toLocaleDateString('fr-BE') + (m.parrain ? ', invitée par ' + m.parrain : ''))),
+      m.moi ? null : el('button', { class: 'btn lien', onclick: () => retirerMembre(m) }, 'Retirer'))));
+  }).catch(err => liste.replaceChildren(el('p', { class: 'discret' }, err.message)));
+  return zone;
+}
+
+async function inviter() {
+  const url = lienInvitation();
+  const texte = 'Rejoins notre groupe Sorpresa pour partager nos listes d\'envies :';
+  if (navigator.share) {
+    try { await navigator.share({ title: 'Sorpresa', text: texte, url }); return; }
+    catch (e) { if (e.name === 'AbortError') return; }
+  }
+  try { await navigator.clipboard.writeText(url); toast('Lien copié'); }
+  catch (e) { prompt('Copie ce lien :', url); }
+}
+
+async function changerLien() {
+  if (!confirm('Créer un nouveau lien ? L\'ancien ne fonctionnera plus pour les nouvelles personnes.')) return;
+  try {
+    const r = await appel('changer_lien');
+    moi.g = r.g; garder(moi);
+    await charger(); vue = 'reglages'; rendre();
+    toast('Nouveau lien prêt. Partage-le si besoin.');
+  } catch (err) { toast(err.message); }
+}
+
+async function retirerMembre(m) {
+  if (!confirm('Retirer ' + m.prenom + ' du groupe ? Sa liste et ses réservations seront effacées.')) return;
+  try { await appel('retirer_membre', { p: m.p }); await charger(); vue = 'reglages'; rendre(); toast(m.prenom + ' a été retirée'); }
+  catch (err) { toast(err.message); }
+}
+
+async function quitter() {
+  const msg = moi.admin
+    ? 'Quitter le groupe ? Tu le gères : sans toi, plus personne ne pourra le gérer.'
+    : 'Quitter le groupe ? Ta liste et tes réservations seront effacées.';
+  if (!confirm(msg)) return;
+  try { await appel('quitter'); } catch (err) { if (err.statut !== 403) return toast(err.message); }
+  oublier(); moi = null; donnees = null;
+  ecranAccueil();
+}
+
+/* ---------- Démarrage ---------- */
+function demarrer() {
+  const h = new URLSearchParams(location.hash.slice(1));
+  const g = h.get('g');
+  if (g && /^[0-9a-f]{18}$/.test(g)) {
+    if (moi && moi.g === g && moi.m) {
+      history.replaceState(null, '', location.pathname + location.search);
+      return charger();
+    }
+    return ecranRejoindre(g, (h.get('p') || '').replace(/[^0-9a-f]/g, '').slice(0, 10));
+  }
+  if (moi && moi.m) return charger();
+  ecranAccueil();
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && moi && moi.m && donnees && edition === null) charger();
+});
+
+if ('serviceWorker' in navigator && !EN_LOCAL) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+demarrer();
+</script>
+</body>
+</html>

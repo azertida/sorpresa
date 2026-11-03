@@ -1,0 +1,15 @@
+{
+  "name": "Sorpresa",
+  "short_name": "Sorpresa",
+  "description": "Des listes d'envies entre proches, sans gâcher la surprise.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fbf6ef",
+  "theme_color": "#a3203a",
+  "icons": [
+    { "src": "icones/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icones/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
