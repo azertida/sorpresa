@@ -1073,7 +1073,7 @@ function cartesTirage() {
     return el('div', { class: 'tirage vu' },
       el('div', { class: 'tirage-tete' }, '🎩 ' + t.nom),
       p ? el('div', { class: 'tirage-qui' }, pastille(p.animal, p.prenom, 46), el('span', {}, 'Tu offres à ', el('strong', {}, p.prenom)))
-        : el('div', { class: 'tirage-qui' }, el('span', {}, t.prenom + ', que tu avais tirée, a quitté le groupe.')),
+        : el('div', { class: 'tirage-qui' }, el('span', {}, t.prenom + ', à qui tu devais offrir, a quitté le groupe.')),
       t.mot ? el('p', { class: 'tirage-mot' }, '« ' + t.mot + ' »') : null,
       p ? el('button', { class: 'btn second', onclick: () => { vue = p.p; rendre(); window.scrollTo(0, 0); } }, 'Voir les envies de ' + p.prenom) : null);
   });
@@ -1102,7 +1102,7 @@ function blocTirages() {
 }
 
 async function annulerTirage(t) {
-  if (!confirm('Annuler le tirage « ' + t.nom + ' » ? Tout le monde perdra la personne tirée.')) return;
+  if (!confirm('Annuler le tirage « ' + t.nom + ' » ? Chacun perdra le résultat de ce tirage.')) return;
   try { await appel('annuler_tirage', { id: t.id }); await charger(); vue = 'reglages'; rendre(); toast('Tirage annulé'); }
   catch (err) { toast(err.message); }
 }
@@ -1124,10 +1124,10 @@ function vueNouveauTirage() {
     const part = membres.filter(m => coches.get(m.p));
     zoneEx.replaceChildren(...part.map(m => {
       const ex = exclus.get(m.p);
-      const resume = el('span', { class: 'discret' }, ex.size ? 'Pas ' + part.filter(x => ex.has(x.p)).map(x => x.prenom).join(', ') : 'Aucune exclusion');
+      const resume = el('span', { class: 'discret' }, ex.size ? 'Pas à ' + part.filter(x => ex.has(x.p)).map(x => x.prenom).join(', ') : 'Aucune exclusion');
       return el('details', { class: 'exclu' },
         el('summary', {}, pastille(m.animal, m.prenom, 26), el('span', { class: 'exclu-nom' }, m.prenom), resume),
-        el('p', { class: 'discret' }, m.prenom + ' ne peut pas tirer :'),
+        el('p', { class: 'discret' }, m.prenom + ' ne peut pas offrir à :'),
         part.filter(x => x.p !== m.p).map(x => el('label', { class: 'case' },
           el('input', { type: 'checkbox', checked: ex.has(x.p), onchange: (ev) => { ev.target.checked ? ex.add(x.p) : ex.delete(x.p); const o = zoneEx.querySelectorAll('details'); const ouverts = [...o].map(d => d.open); rendreExclusions(); zoneEx.querySelectorAll('details').forEach((d, i) => { d.open = ouverts[i]; }); } }),
           pastille(x.animal, x.prenom, 22), x.prenom)));
@@ -1160,13 +1160,13 @@ function vueNouveauTirage() {
 
   return el('div', {},
     el('h1', {}, 'Nouveau tirage'),
-    el('p', { class: 'chapo' }, 'La casquette tire au sort à qui chaque personne offre. Personne ne peut se tirer soi-même, et personne, pas même toi, ne verra les paires.'),
+    el('p', { class: 'chapo' }, 'La casquette tire au sort à qui chaque personne offre. Personne ne peut tomber sur son propre nom, et personne, pas même toi, ne verra les paires.'),
     el('div', { class: 'form' },
       el('label', {}, 'Nom du tirage'), nom, occasions,
       el('label', {}, 'Un mot pour tout le monde ', el('span', { class: 'opt' }, '(facultatif)')), mot),
     el('h2', {}, 'Qui participe ?'), el('div', { class: 'form' }, listeP),
     el('h2', {}, 'Exclusions'),
-    el('p', { class: 'discret', style: 'margin-bottom:8px' }, 'Ouvre un prénom pour dire qui cette personne ne peut pas tirer (par exemple son ou sa partenaire). Une exclusion ne vaut que dans un sens : si Léa ne peut pas tirer Zoé, Zoé peut quand même tirer Léa.'),
+    el('p', { class: 'discret', style: 'margin-bottom:8px' }, 'Ouvre un prénom pour dire à qui cette personne ne peut pas offrir (par exemple son ou sa partenaire). Une exclusion ne vaut que dans un sens : si Léa ne peut pas offrir à Zoé, Zoé peut quand même offrir à Léa.'),
     zoneEx, erreurZone,
     el('div', { style: 'margin-top:18px' }, btn),
     el('button', { class: 'btn lien retour', onclick: () => { vue = 'reglages'; rendre(); } }, '← Retour'));

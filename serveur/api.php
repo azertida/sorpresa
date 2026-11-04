@@ -251,7 +251,7 @@ function base(): PDO {
             tirage      TEXT NOT NULL REFERENCES tirages(id) ON DELETE CASCADE,
             donneur     TEXT NOT NULL,               -- membre qui offre
             receveur    TEXT NOT NULL,               -- membre à qui il offre (vide s\'il a quitté le groupe)
-            prenom      TEXT NOT NULL,               -- prénom de la personne tirée, au moment du tirage
+            prenom      TEXT NOT NULL,               -- prénom de la personne à qui l'on offre, au moment du tirage
             PRIMARY KEY (tirage, donneur)
         );
     ');
@@ -311,7 +311,7 @@ function effacer_membre(PDO $db, string $groupe, string $id): void {
     $db->prepare('DELETE FROM envies WHERE groupe = ? AND res_membre = ? AND retiree <> \'\'')->execute([$groupe, $id]);
     $db->prepare('UPDATE envies SET res_membre = \'\', res_date = \'\', res_prix = NULL, res_achete = 0 WHERE groupe = ? AND res_membre = ?')->execute([$groupe, $id]);
     $db->prepare('DELETE FROM notes WHERE groupe = ? AND membre = ?')->execute([$groupe, $id]);
-    // Tirages : on retire ce qu'elle devait offrir ; qui l'avait tirée verra qu'elle a quitté le groupe.
+    // Tirages : on retire ce qu'elle devait offrir ; qui devait lui offrir verra qu'elle a quitté le groupe.
     $db->prepare('DELETE FROM paires WHERE donneur = ? AND tirage IN (SELECT id FROM tirages WHERE groupe = ?)')->execute([$id, $groupe]);
     $db->prepare('UPDATE paires SET receveur = \'\' WHERE receveur = ? AND tirage IN (SELECT id FROM tirages WHERE groupe = ?)')->execute([$id, $groupe]);
     $db->prepare('DELETE FROM membres WHERE groupe = ? AND id = ?')->execute([$groupe, $id]);
@@ -671,7 +671,7 @@ try {
                 $autorises[$g] = array_values(array_filter($noms, fn($r) => $r !== $g && !isset($ex[$r])));
             }
             $bloques = array_values(array_map(fn($g) => $prenom_de[$g], array_filter($noms, fn($g) => !$autorises[$g])));
-            if ($bloques) erreur(joli_liste($bloques) . (count($bloques) > 1 ? ' ne peuvent tirer personne' : ' ne peut tirer personne') . ' : retire une exclusion');
+            if ($bloques) erreur(joli_liste($bloques) . (count($bloques) > 1 ? ' ne peuvent offrir à personne' : ' ne peut offrir à personne') . ' : retire une exclusion');
             $r = tirer($noms, $autorises);
             if ($r === null) erreur('Avec ces exclusions, aucun tirage n\'est possible : retire une exclusion et réessaie');
             $id = aleatoire(8);

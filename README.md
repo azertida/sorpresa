@@ -48,5 +48,5 @@ en touchant le nom du groupe, en haut. Le lien de secours les contient tous.
 ## Tirage au sort
 
 La personne qui gère le groupe lance un tirage (⚙︎ → Tirage au sort) : participants, exclusions à sens unique,
-un mot pour tout le monde. Le serveur tire au sort lui-même (personne ne se tire soi-même, au moins trois personnes) ;
+un mot pour tout le monde. Le serveur tire au sort lui-même (personne ne tombe sur son propre nom, au moins trois personnes) ;
 chacun découvre dans l'appli à qui il offre, et personne — gestionnaire comprise — ne voit l'ensemble des paires.
