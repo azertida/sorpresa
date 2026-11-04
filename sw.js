@@ -1,7 +1,7 @@
 /* La Casquette — service worker : l'appli s'ouvre même hors connexion,
    et se met à jour d'elle-même (le réseau d'abord, la copie en secours).
    Les échanges avec le serveur ne sont jamais mis en cache. */
-const VERSION = 'casquette-5';
+const VERSION = 'casquette-6';
 const FICHIERS = ['./', './index.html', './manifest.webmanifest',
   './icones/icon-192.png', './icones/icon-512.png', './icones/apple-touch-icon.png', './icones/favicon-32.png'];
 
@@ -19,7 +19,9 @@ self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
   e.respondWith(
-    fetch(req)
+    // « no-cache » : on demande toujours au site si le fichier a changé (sinon le navigateur
+    // peut resservir une vieille copie pendant une dizaine de minutes après une mise à jour).
+    fetch(req, { cache: 'no-cache' })
       .then((rep) => {
         if (rep.ok) { const copie = rep.clone(); caches.open(VERSION).then((c) => c.put(req, copie)); }
         return rep;
