@@ -671,7 +671,7 @@ try {
                 $autorises[$g] = array_values(array_filter($noms, fn($r) => $r !== $g && !isset($ex[$r])));
             }
             $bloques = array_values(array_map(fn($g) => $prenom_de[$g], array_filter($noms, fn($g) => !$autorises[$g])));
-            if ($bloques) erreur(joli_liste($bloques) . (count($bloques) > 1 ? ' ne peuvent' : ' ne peut') . ' offrir à personne : retire une exclusion');
+            if ($bloques) erreur(joli_liste($bloques) . (count($bloques) > 1 ? ' ne peuvent tirer personne' : ' ne peut tirer personne') . ' : retire une exclusion');
             $r = tirer($noms, $autorises);
             if ($r === null) erreur('Avec ces exclusions, aucun tirage n\'est possible : retire une exclusion et réessaie');
             $id = aleatoire(8);

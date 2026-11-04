@@ -1124,10 +1124,10 @@ function vueNouveauTirage() {
     const part = membres.filter(m => coches.get(m.p));
     zoneEx.replaceChildren(...part.map(m => {
       const ex = exclus.get(m.p);
-      const resume = el('span', { class: 'discret' }, ex.size ? 'Pas à ' + part.filter(x => ex.has(x.p)).map(x => x.prenom).join(', ') : 'Aucune exclusion');
+      const resume = el('span', { class: 'discret' }, ex.size ? 'Pas ' + part.filter(x => ex.has(x.p)).map(x => x.prenom).join(', ') : 'Aucune exclusion');
       return el('details', { class: 'exclu' },
         el('summary', {}, pastille(m.animal, m.prenom, 26), el('span', { class: 'exclu-nom' }, m.prenom), resume),
-        el('p', { class: 'discret' }, m.prenom + ' ne peut pas offrir à :'),
+        el('p', { class: 'discret' }, m.prenom + ' ne peut pas tirer :'),
         part.filter(x => x.p !== m.p).map(x => el('label', { class: 'case' },
           el('input', { type: 'checkbox', checked: ex.has(x.p), onchange: (ev) => { ev.target.checked ? ex.add(x.p) : ex.delete(x.p); const o = zoneEx.querySelectorAll('details'); const ouverts = [...o].map(d => d.open); rendreExclusions(); zoneEx.querySelectorAll('details').forEach((d, i) => { d.open = ouverts[i]; }); } }),
           pastille(x.animal, x.prenom, 22), x.prenom)));
@@ -1166,7 +1166,7 @@ function vueNouveauTirage() {
       el('label', {}, 'Un mot pour tout le monde ', el('span', { class: 'opt' }, '(facultatif)')), mot),
     el('h2', {}, 'Qui participe ?'), el('div', { class: 'form' }, listeP),
     el('h2', {}, 'Exclusions'),
-    el('p', { class: 'discret', style: 'margin-bottom:8px' }, 'Ouvre un prénom pour dire à qui cette personne ne peut pas offrir (par exemple son ou sa partenaire). Une exclusion ne vaut que dans un sens.'),
+    el('p', { class: 'discret', style: 'margin-bottom:8px' }, 'Ouvre un prénom pour dire qui cette personne ne peut pas tirer (par exemple son ou sa partenaire). Une exclusion ne vaut que dans un sens : si Léa ne peut pas tirer Zoé, Zoé peut quand même tirer Léa.'),
     zoneEx, erreurZone,
     el('div', { style: 'margin-top:18px' }, btn),
     el('button', { class: 'btn lien retour', onclick: () => { vue = 'reglages'; rendre(); } }, '← Retour'));
