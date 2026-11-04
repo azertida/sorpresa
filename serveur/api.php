@@ -18,6 +18,9 @@
  *    ou non, avec prix et « acheté ») et suivre prix et achat de ses réservations :
  *    tout cela n'est jamais envoyé qu'à la personne qui l'a noté ;
  *  - quitter le groupe (ou en être retiré) efface tout ce qui concerne la personne ;
+ *  - TIRAGE AU SORT : la personne qui gère le groupe le lance (participants, exclusions à sens unique) ;
+ *    le serveur tire au sort lui-même et ne montre à chacun que la personne à qui il offre —
+ *    personne, gestionnaire comprise, ne voit l'ensemble des paires ;
  *  - aucune adresse IP ni autre trace n'est enregistrée par ce script.
  *
  * Emplacement : www/sorpresa/api.php — les données vivent hors du site,
@@ -36,6 +39,9 @@ const MAX_MEMBRES_PAR_GROUPE = 30;
 const MAX_ENVIES_PAR_PERSONNE = 60;
 const MAX_REQUETE_OCTETS = 200000;          // un import depuis Mes Cadeaux peut compter des dizaines d'idées
 const MAX_NOTES_PAR_PERSONNE = 300;
+const MAX_TIRAGES_PAR_GROUPE = 20;
+const MAX_NOM_TIRAGE = 40;
+const MAX_MOT_TIRAGE = 200;
 const MAX_POUR = 40;
 const MAX_PRIX = 100000;
 /* Les animaux que l'on peut choisir (les images vivent dans l'appli, dossier animaux/). */
@@ -129,6 +135,51 @@ function animal_valide(PDO $db, string $groupe, $valeur, string $sauf = ''): str
     return $a;
 }
 
+/* Mélange équitable (Fisher-Yates) avec un hasard cryptographique. */
+function melanger(array $t): array {
+    for ($i = count($t) - 1; $i > 0; $i--) {
+        $j = random_int(0, $i);
+        [$t[$i], $t[$j]] = [$t[$j], $t[$i]];
+    }
+    return $t;
+}
+
+/* Tirage uniforme parmi les combinaisons valides : on mélange jusqu'à en trouver une qui respecte
+   toutes les règles ; si c'est trop rare, une recherche systématique tranche entre « rare » et « impossible ».
+   $autorises[donneur] = liste des receveurs permis. Renvoie [donneur => receveur] ou null. (Repris de La Casquette v1.) */
+function tirer(array $noms, array $autorises): ?array {
+    $n = count($noms);
+    $permis = [];
+    foreach ($autorises as $g => $l) $permis[$g] = array_flip($l);
+    for ($essai = 0; $essai < 200000; $essai++) {
+        $p = melanger($noms);
+        $ok = true;
+        for ($i = 0; $i < $n; $i++) { if (!isset($permis[$noms[$i]][$p[$i]])) { $ok = false; break; } }
+        if ($ok) return array_combine($noms, $p);
+    }
+    $ordre = $noms;
+    usort($ordre, fn($a, $b) => count($autorises[$a]) <=> count($autorises[$b]));
+    $pris = []; $r = [];
+    $etape = function (int $i) use (&$etape, $ordre, $autorises, &$pris, &$r): bool {
+        if ($i === count($ordre)) return true;
+        $g = $ordre[$i];
+        foreach (melanger($autorises[$g]) as $x) {
+            if (isset($pris[$x])) continue;
+            $pris[$x] = true; $r[$g] = $x;
+            if ($etape($i + 1)) return true;
+            unset($pris[$x], $r[$g]);
+        }
+        return false;
+    };
+    return $etape(0) ? $r : null;
+}
+
+function joli_liste(array $t): string {
+    if (count($t) <= 1) return implode('', $t);
+    $dernier = array_pop($t);
+    return implode(', ', $t) . ' et ' . $dernier;
+}
+
 function aujourdhui(): string { return date('Y-m-d'); }
 function maintenant(): string { return date('Y-m-d H:i:s'); }
 
@@ -189,6 +240,20 @@ function base(): PDO {
             cree        TEXT NOT NULL
         );
         CREATE INDEX IF NOT EXISTS idx_notes ON notes(groupe, membre);
+        CREATE TABLE IF NOT EXISTS tirages (
+            id          TEXT PRIMARY KEY,
+            groupe      TEXT NOT NULL REFERENCES groupes(code) ON DELETE CASCADE,
+            nom         TEXT NOT NULL,
+            mot         TEXT NOT NULL DEFAULT \'\',
+            cree        TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS paires (
+            tirage      TEXT NOT NULL REFERENCES tirages(id) ON DELETE CASCADE,
+            donneur     TEXT NOT NULL,               -- membre qui offre
+            receveur    TEXT NOT NULL,               -- membre à qui il offre (vide s\'il a quitté le groupe)
+            prenom      TEXT NOT NULL,               -- prénom de la personne tirée, au moment du tirage
+            PRIMARY KEY (tirage, donneur)
+        );
     ');
     // Suivi privé des réservations : prix et « acheté », vus seulement par qui a réservé.
     $cols = array_column($db->query('PRAGMA table_info(envies)')->fetchAll(), 'name');
@@ -246,6 +311,9 @@ function effacer_membre(PDO $db, string $groupe, string $id): void {
     $db->prepare('DELETE FROM envies WHERE groupe = ? AND res_membre = ? AND retiree <> \'\'')->execute([$groupe, $id]);
     $db->prepare('UPDATE envies SET res_membre = \'\', res_date = \'\', res_prix = NULL, res_achete = 0 WHERE groupe = ? AND res_membre = ?')->execute([$groupe, $id]);
     $db->prepare('DELETE FROM notes WHERE groupe = ? AND membre = ?')->execute([$groupe, $id]);
+    // Tirages : on retire ce qu'elle devait offrir ; qui l'avait tirée verra qu'elle a quitté le groupe.
+    $db->prepare('DELETE FROM paires WHERE donneur = ? AND tirage IN (SELECT id FROM tirages WHERE groupe = ?)')->execute([$id, $groupe]);
+    $db->prepare('UPDATE paires SET receveur = \'\' WHERE receveur = ? AND tirage IN (SELECT id FROM tirages WHERE groupe = ?)')->execute([$id, $groupe]);
     $db->prepare('DELETE FROM membres WHERE groupe = ? AND id = ?')->execute([$groupe, $id]);
     // Un groupe dont la dernière personne est partie disparaît avec tout son contenu.
     $db->prepare('DELETE FROM groupes WHERE code = ? AND NOT EXISTS (SELECT 1 FROM membres WHERE groupe = ?)')->execute([$groupe, $groupe]);
@@ -389,8 +457,23 @@ try {
                 return ['id' => $n['id'], 'pour' => $n['pour'], 'titre' => $n['titre'],
                         'prix' => $n['prix'] !== null ? (float)$n['prix'] : null, 'achete' => (int)$n['achete'] === 1];
             }, $st->fetchAll());
-            $rep = ['nom' => $grp['nom'], 'moi' => alias($code, $moi['id']), 'personnes' => $personnes, 'envies' => $envies, 'notes' => $notes];
-            if (est_admin($grp, $cle_admin)) $rep['admin'] = true;
+            // Tirages : seulement la personne à qui JE offre.
+            $st = $db->prepare('SELECT t.id, t.nom, t.mot, t.cree, p.receveur, p.prenom FROM tirages t JOIN paires p ON p.tirage = t.id
+                                WHERE t.groupe = ? AND p.donneur = ? ORDER BY t.cree DESC, t.rowid DESC');
+            $st->execute([$code, $moi['id']]);
+            $tirages = array_map(function ($t) use ($code) {
+                return ['id' => $t['id'], 'nom' => $t['nom'], 'mot' => $t['mot'], 'cree' => $t['cree'],
+                        'p' => $t['receveur'] !== '' ? alias($code, $t['receveur']) : '', 'prenom' => $t['prenom']];
+            }, $st->fetchAll());
+            $rep = ['nom' => $grp['nom'], 'moi' => alias($code, $moi['id']), 'personnes' => $personnes, 'envies' => $envies, 'notes' => $notes, 'tirages' => $tirages];
+            if (est_admin($grp, $cle_admin)) {
+                $rep['admin'] = true;
+                // La gestion voit les tirages et leur nombre de participants, jamais les paires.
+                $st = $db->prepare('SELECT t.id, t.nom, t.cree, COUNT(p.donneur) AS nb FROM tirages t LEFT JOIN paires p ON p.tirage = t.id
+                                    WHERE t.groupe = ? GROUP BY t.id ORDER BY t.cree DESC, t.rowid DESC');
+                $st->execute([$code]);
+                $rep['tirages_gestion'] = array_map(fn($t) => ['id' => $t['id'], 'nom' => $t['nom'], 'cree' => $t['cree'], 'nb' => (int)$t['nb']], $st->fetchAll());
+            }
             repondre($rep);
 
         /* ----- Ajouter une envie à sa liste ----- */
@@ -557,6 +640,52 @@ try {
             if ($id === null) erreur('Personne introuvable', 404);
             if ($id === $moi['id']) erreur('Pour partir toi-même, utilise « Quitter le groupe »');
             effacer_membre($db, $code, $id);
+            repondre(['ok' => true]);
+
+        /* ----- Gestion : lancer un tirage au sort ----- */
+        case 'tirer':
+            if (!est_admin($grp, $cle_admin)) erreur('Réservé à la personne qui gère le groupe', 403);
+            $nom = texte($entree['nom'] ?? '', MAX_NOM_TIRAGE);
+            if ($nom === '') erreur('Donne un nom au tirage (par exemple « Noël 2026 »)');
+            $mot = texte($entree['mot'] ?? '', MAX_MOT_TIRAGE);
+            $st = $db->prepare('SELECT COUNT(*) FROM tirages WHERE groupe = ?');
+            $st->execute([$code]);
+            if ((int)$st->fetchColumn() >= MAX_TIRAGES_PAR_GROUPE) erreur('Ce groupe a déjà beaucoup de tirages : annule les anciens');
+            // Les membres, désignés par leur alias.
+            $st = $db->prepare('SELECT id, prenom FROM membres WHERE groupe = ?');
+            $st->execute([$code]);
+            $par_alias = []; $prenom_de = [];
+            foreach ($st->fetchAll() as $m) { $par_alias[alias($code, $m['id'])] = $m['id']; $prenom_de[$m['id']] = $m['prenom']; }
+            $noms = [];
+            foreach ((array)($entree['participants'] ?? []) as $a) {
+                if (!is_string($a) || !isset($par_alias[$a])) erreur('Une des personnes n\'est plus dans le groupe');
+                $noms[$par_alias[$a]] = true;
+            }
+            $noms = array_keys($noms);
+            if (count($noms) < 3) erreur('Il faut au moins trois personnes pour garder le secret');
+            $exclusions = is_array($entree['exclusions'] ?? null) ? $entree['exclusions'] : [];
+            $autorises = [];
+            foreach ($noms as $g) {
+                $ex = [];
+                foreach ((array)($exclusions[array_search($g, $par_alias, true)] ?? []) as $a) if (isset($par_alias[$a])) $ex[$par_alias[$a]] = true;
+                $autorises[$g] = array_values(array_filter($noms, fn($r) => $r !== $g && !isset($ex[$r])));
+            }
+            $bloques = array_values(array_map(fn($g) => $prenom_de[$g], array_filter($noms, fn($g) => !$autorises[$g])));
+            if ($bloques) erreur(joli_liste($bloques) . (count($bloques) > 1 ? ' ne peuvent' : ' ne peut') . ' offrir à personne : retire une exclusion');
+            $r = tirer($noms, $autorises);
+            if ($r === null) erreur('Avec ces exclusions, aucun tirage n\'est possible : retire une exclusion et réessaie');
+            $id = aleatoire(8);
+            $db->beginTransaction();
+            $db->prepare('INSERT INTO tirages (id, groupe, nom, mot, cree) VALUES (?, ?, ?, ?, ?)')->execute([$id, $code, $nom, $mot, maintenant()]);
+            $ins = $db->prepare('INSERT INTO paires (tirage, donneur, receveur, prenom) VALUES (?, ?, ?, ?)');
+            foreach ($r as $g => $x) $ins->execute([$id, $g, $x, $prenom_de[$x]]);
+            $db->commit();
+            repondre(['ok' => true, 'id' => $id, 'nb' => count($r)]);   // la réponse ne dit rien des paires
+
+        /* ----- Gestion : annuler un tirage ----- */
+        case 'annuler_tirage':
+            if (!est_admin($grp, $cle_admin)) erreur('Réservé à la personne qui gère le groupe', 403);
+            $db->prepare('DELETE FROM tirages WHERE id = ? AND groupe = ?')->execute([(string)($entree['id'] ?? ''), $code]);
             repondre(['ok' => true]);
 
         /* ----- Gestion : changer le lien du groupe ----- */

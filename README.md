@@ -44,3 +44,9 @@ et 13 autres, soit 25. Images **Fluent Emoji** de Microsoft, licence MIT (`anima
 
 Un même téléphone peut faire partie de plusieurs groupes (famille, amies…) : on passe de l'un à l'autre
 en touchant le nom du groupe, en haut. Le lien de secours les contient tous.
+
+## Tirage au sort
+
+La personne qui gère le groupe lance un tirage (⚙︎ → Tirage au sort) : participants, exclusions à sens unique,
+un mot pour tout le monde. Le serveur tire au sort lui-même (personne ne se tire soi-même, au moins trois personnes) ;
+chacun découvre dans l'appli à qui il offre, et personne — gestionnaire comprise — ne voit l'ensemble des paires.

@@ -228,6 +228,27 @@ h1 .pastille, h2 .pastille { margin-right: 8px; }
 .animal:disabled { opacity: .35; cursor: default; }
 .animal .pris { font-weight: 400; color: var(--doux); font-size: .65rem; }
 
+.tirage { background: var(--carte); border: 2px solid var(--or); border-radius: 16px; padding: 16px; margin: 16px 0; box-shadow: var(--ombre); }
+.tirage p { margin: 6px 0 12px; }
+.tirage-tete { display: flex; justify-content: space-between; gap: 10px; font-weight: 700; color: var(--or); }
+.tirage-tete span { color: var(--encre); }
+.tirage-qui { display: flex; align-items: center; gap: 12px; font-size: 1.2rem; margin: 12px 0; }
+.tirage-mot { color: var(--doux); font-style: italic; }
+.tirage.vu { border-color: var(--trait); }
+.case { display: flex; align-items: center; gap: 10px; font-weight: 500; margin: 0; padding: 8px 0; cursor: pointer; }
+.case input { width: 20px; height: 20px; accent-color: var(--ruban); }
+details.exclu { background: var(--carte); border: 1px solid var(--trait); border-radius: 12px; padding: 10px 14px; margin-bottom: 8px; }
+details.exclu summary { display: flex; align-items: center; gap: 10px; cursor: pointer; list-style: none; }
+details.exclu summary::-webkit-details-marker { display: none; }
+.exclu-nom { font-weight: 650; }
+details.exclu summary .discret { margin-left: auto; text-align: right; }
+.secousse {
+  position: fixed; inset: 0; z-index: 30; background: rgba(28, 23, 22, .72); color: #fff; font-weight: 600;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+}
+.chapeau-anim svg { width: 220px; height: auto; animation: secoue .35s ease-in-out infinite alternate; transform-origin: 50% 80%; }
+@keyframes secoue { from { transform: rotate(-9deg) translateY(0); } to { transform: rotate(9deg) translateY(-8px); } }
+
 #toast {
   position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(20px);
   background: var(--encre); color: var(--fond); padding: 11px 18px; border-radius: 999px; font-size: .95rem;
@@ -310,6 +331,9 @@ const FOND = {
   paon: '#E3EEF4', papillon: '#FBE3DA',
 };
 const NOM_ANIMAL = Object.fromEntries(ANIMAUX);
+
+/* La casquette du tirage : le dessin de La Casquette d'origine. */
+const CASQUETTE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="20 140 460 270" width="245" height="144" aria-hidden="true"> <defs> <pattern id="tweed" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(12)"> <rect width="20" height="20" fill="#7E6D5A"/> <path d="M0 0 L10 7 L20 0 M0 10 L10 17 L20 10" stroke="#66584A" stroke-width="2.4" fill="none"/> <path d="M0 5 L10 12 L20 5" stroke="#948370" stroke-width="1.5" fill="none"/> </pattern> <pattern id="tweedFonce" width="16" height="16" patternUnits="userSpaceOnUse"> <rect width="16" height="16" fill="#5E5143"/> <path d="M0 0 L8 6 L16 0 M0 8 L8 14 L16 8" stroke="#4A3F34" stroke-width="2" fill="none"/> </pattern> <radialGradient id="doublure" cx="50%" cy="30%" r="70%"> <stop offset="0" stop-color="#6E4A2E"/> <stop offset="1" stop-color="#3B2A1D"/> </radialGradient> <clipPath id="dedans"><path d="M0 0 L512 0 L512 252 L428 252 A160 40 0 0 1 108 252 L0 252 Z"/></clipPath> </defs> <g transform="translate(256 268) scale(1.04) translate(-258 -300)"> <!-- ombre --> <ellipse cx="262" cy="398" rx="170" ry="18" fill="#2B2118" opacity=".13"/> <!-- calotte retournée --> <g transform="translate(0 600) scale(1 -1)"> <path d="M424 358 C452 342 458 270 416 246 C352 214 254 234 172 274 C130 294 102 316 110 336 C126 350 160 352 200 354 Z" fill="url(#tweed)" stroke="#3E342A" stroke-width="5" stroke-linejoin="round"/> <path d="M120 326 C176 298 262 266 356 250" fill="none" stroke="#3E342A" stroke-width="4" stroke-linecap="round" opacity=".6"/> <circle cx="140" cy="318" r="7" fill="#4A3F34"/> </g> <!-- visière : un croissant posé à plat contre le bord avant de l\'ouverture --> <path d="M150 225 C94 219 44 234 38 255 C44 276 94 290 150 279 A160 40 0 0 1 150 225 Z" fill="url(#tweedFonce)" stroke="#3E342A" stroke-width="5" stroke-linejoin="round"/> <path d="M140 234 C104 234 76 244 70 254" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" opacity=".15"/> <!-- ouverture : l\'intérieur doublé --> <ellipse cx="268" cy="252" rx="160" ry="40" fill="url(#doublure)" stroke="#3E342A" stroke-width="5"/> <g clip-path="url(#dedans)" stroke="#9C7A45" stroke-width="4" stroke-linejoin="round"> <g transform="translate(318 244) rotate(16)"><rect x="-40" y="-26" width="80" height="52" rx="4" fill="#DDBB7E"/><line x1="0" y1="-26" x2="0" y2="26" stroke-dasharray="7 6" stroke-width="3"/></g> <g transform="translate(232 240) rotate(-14)"><rect x="-44" y="-28" width="88" height="56" rx="4" fill="#E7C98F"/><line x1="0" y1="-28" x2="0" y2="28" stroke-dasharray="7 6" stroke-width="3"/></g> <g transform="translate(284 262) rotate(4)"><rect x="-36" y="-23" width="72" height="46" rx="4" fill="#E7C98F"/><line x1="0" y1="-23" x2="0" y2="23" stroke-dasharray="6 5" stroke-width="3"/></g> <g transform="translate(372 250) rotate(34)"><rect x="-28" y="-18" width="56" height="36" rx="4" fill="#DDBB7E"/><line x1="0" y1="-18" x2="0" y2="18" stroke-dasharray="6 5" stroke-width="3"/></g> </g> <path d="M108 252 A160 40 0 0 0 428 252" fill="none" stroke="#3E342A" stroke-width="5"/> </g> </svg>';
 
 /* Une pastille ronde : l'animal de la personne, ou à défaut l'initiale de son prénom. */
 function pastille(animal, prenom, taille = 26) {
@@ -416,7 +440,7 @@ async function charger() {
     }
   }
   if (moi && moi.nom !== donnees.nom) { moi.nom = donnees.nom; enregistrer(); }
-  if (vue !== 'moi' && vue !== 'offrir' && vue !== 'reglages' && vue !== 'animal' && !donnees.personnes.some(p => p.p === vue)) vue = 'moi';
+  if (vue !== 'moi' && vue !== 'offrir' && vue !== 'reglages' && vue !== 'animal' && vue !== 'tirage' && !donnees.personnes.some(p => p.p === vue)) vue = 'moi';
   rendre();
 }
 
@@ -525,7 +549,8 @@ function modeEmploi() {
     el('ul', { class: 'mode' },
       ligne('🎁', 'Tes envies', 'note ce qui te ferait plaisir, au détail près, et retire-le quand tu l\'as reçu.'),
       ligne('🤫', 'Les envies des autres', 'réserve ce que tu offres. Personne ne voit ce qui est réservé sur sa propre liste.'),
-      ligne('🛍️', 'À offrir', 'tes réservations et tes idées pour qui tu veux, avec prix, achats et budget, rien que pour toi.')),
+      ligne('🛍️', 'À offrir', 'tes réservations et tes idées pour qui tu veux, avec prix, achats et budget, rien que pour toi.'),
+      ligne('🎩', 'Le tirage au sort', 'la casquette désigne à qui chacun offre, façon Secret Santa, et tu découvres aussitôt sa liste.')),
     el('p', { class: 'discret', style: 'margin:-8px 0 20px' }, 'Un groupe par famille ou bande d\'amis, et un animal pour chacun.'));
 }
 
@@ -656,7 +681,7 @@ function rendre() {
     ),
     el('nav', { class: 'onglets' },
       onglet('moi', 'Ma liste', mesEnvies.length, null, moiP && moiP.animal ? pastille(moiP.animal, moiP.prenom, 24) : null),
-      autres.map(p => onglet(p.p, p.prenom, parPersonne(p.p).length, null, pastille(p.animal, p.prenom, 24))),
+      autres.map(p => onglet(p.p, (tiresParMoi().has(p.p) ? '🎩 ' : '') + p.prenom, parPersonne(p.p).length, null, pastille(p.animal, p.prenom, 24))),
       onglet('offrir', 'À offrir', elementsAOffrir().filter(i => !i.achete).length, 'offrir')
     )
   );
@@ -666,6 +691,7 @@ function rendre() {
   else if (vue === 'offrir') contenu = vueOffrir(mesRes, retirees);
   else if (vue === 'reglages') contenu = vueReglages();
   else if (vue === 'animal') contenu = vueAnimal();
+  else if (vue === 'tirage') contenu = vueNouveauTirage();
   else {
     const p = d.personnes.find(x => x.p === vue);
     contenu = vueAutre(p, parPersonne(p.p), retirees.filter(e => e.p === p.p));
@@ -682,6 +708,7 @@ function rendre() {
 /* Ma liste */
 function vueMaListe(envies, seule) {
   const bloc = el('div');
+  cartesTirage().forEach(c => bloc.append(c));
   const moiP = donnees.personnes.find(p => p.moi);
   if (moiP && !moiP.animal) {
     bloc.append(el('button', { class: 'bandeau', style: 'border-color:var(--ruban);background:var(--ruban-pale)', onclick: () => { vue = 'animal'; rendre(); } },
@@ -768,6 +795,8 @@ async function retirer(e) {
 function vueAutre(p, envies, retirees) {
   const bloc = el('div');
   bloc.append(el('h1', {}, pastille(p.animal, p.prenom, 40), 'Les envies de ' + p.prenom));
+  const tires = (donnees.tirages || []).filter(t => t.p === p.p && dejaVu(t.id));
+  if (tires.length) bloc.append(el('div', { class: 'principe' }, '🎩 C\'est à ' + p.prenom + ' que tu offres pour « ' + tires.map(t => t.nom).join(' », « ') + ' ». Chut !'));
   bloc.append(el('p', { class: 'chapo' }, p.prenom + ' ne voit pas ce qui est réservé. Les autres, si : ça évite les doublons.'));
   for (const e of retirees) bloc.append(carteRetiree(e, false));
   if (!envies.length) {
@@ -846,6 +875,7 @@ function vueOffrir(mesRes, retirees) {
   const total = items.reduce((t, i) => t + (i.prix || 0), 0);
   const achete = items.reduce((t, i) => t + (i.achete ? (i.prix || 0) : 0), 0);
 
+  cartesTirage().forEach(c => bloc.append(c));
   bloc.append(el('h1', {}, 'À offrir'));
   bloc.append(el('p', { class: 'chapo' }, 'Ce que tu as réservé et tes idées à toi. Les prix et ce qui est acheté, toi seule les vois.'));
   if (items.length) {
@@ -1017,6 +1047,131 @@ function vueAnimal() {
   return bloc;
 }
 
+/* ---------- Tirage au sort ---------- */
+function dejaVu(id) { return !!(moi && Array.isArray(moi.vus) && moi.vus.includes(id)); }
+function marquerVu(id) {
+  if (!moi) return;
+  moi.vus = Array.isArray(moi.vus) ? moi.vus : [];
+  if (!moi.vus.includes(id)) moi.vus.push(id);
+  const ids = new Set((donnees.tirages || []).map(t => t.id));
+  moi.vus = moi.vus.filter(x => ids.has(x));     // on oublie les tirages annulés
+  enregistrer();
+}
+function tiresParMoi() {
+  return new Set((donnees && donnees.tirages || []).filter(t => t.p && dejaVu(t.id)).map(t => t.p));
+}
+
+function cartesTirage() {
+  return (donnees.tirages || []).map(t => {
+    const p = donnees.personnes.find(x => x.p === t.p);
+    if (!dejaVu(t.id)) {
+      return el('div', { class: 'tirage' },
+        el('div', { class: 'tirage-tete' }, '🎩 Tirage au sort', el('span', {}, t.nom)),
+        el('p', {}, 'La casquette a choisi à qui tu offres. Personne d\'autre que toi ne le saura.'),
+        el('button', { class: 'btn large', onclick: () => decouvrir(t) }, 'Découvrir à qui j\'offre'));
+    }
+    return el('div', { class: 'tirage vu' },
+      el('div', { class: 'tirage-tete' }, '🎩 ' + t.nom),
+      p ? el('div', { class: 'tirage-qui' }, pastille(p.animal, p.prenom, 46), el('span', {}, 'Tu offres à ', el('strong', {}, p.prenom)))
+        : el('div', { class: 'tirage-qui' }, el('span', {}, t.prenom + ', que tu avais tirée, a quitté le groupe.')),
+      t.mot ? el('p', { class: 'tirage-mot' }, '« ' + t.mot + ' »') : null,
+      p ? el('button', { class: 'btn second', onclick: () => { vue = p.p; rendre(); window.scrollTo(0, 0); } }, 'Voir les envies de ' + p.prenom) : null);
+  });
+}
+
+function decouvrir(t) {
+  const fini = () => { marquerVu(t.id); rendre(); window.scrollTo(0, 0); };
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return fini();
+  const voile = el('div', { class: 'secousse', role: 'status' });
+  const chapeau = el('div', { class: 'chapeau-anim' });
+  chapeau.innerHTML = CASQUETTE_SVG;
+  voile.append(chapeau, el('div', {}, 'La casquette mélange les noms…'));
+  document.body.append(voile);
+  setTimeout(() => { voile.remove(); fini(); }, 1700);
+}
+
+function blocTirages() {
+  const liste = donnees.tirages_gestion || [];
+  return el('div', { class: 'reglage' },
+    el('p', {}, el('strong', {}, '🎩 Tirage au sort'), el('br'),
+      el('span', { class: 'discret' }, 'Tu choisis qui participe ; la casquette tire au sort sur le serveur. Chaque personne découvre à qui elle offre, et personne d\'autre, toi comprise, ne voit les paires.')),
+    liste.map(t => el('div', { class: 'membre' },
+      el('div', { style: 'flex:1' }, t.nom, el('div', { class: 'discret' }, t.nb + ' personnes · ' + new Date(t.cree.replace(' ', 'T')).toLocaleDateString('fr-BE'))),
+      el('button', { class: 'btn lien', onclick: () => annulerTirage(t) }, 'Annuler'))),
+    el('div', { class: 'rangee' }, el('button', { class: 'btn', onclick: () => { vue = 'tirage'; rendre(); window.scrollTo(0, 0); } }, 'Nouveau tirage')));
+}
+
+async function annulerTirage(t) {
+  if (!confirm('Annuler le tirage « ' + t.nom + ' » ? Tout le monde perdra la personne tirée.')) return;
+  try { await appel('annuler_tirage', { id: t.id }); await charger(); vue = 'reglages'; rendre(); toast('Tirage annulé'); }
+  catch (err) { toast(err.message); }
+}
+
+function vueNouveauTirage() {
+  const membres = donnees.personnes;
+  const annee = new Date().getFullYear();
+  const nom = el('input', { type: 'text', maxlength: 40, list: 'occasions', value: 'Noël ' + annee });
+  const occasions = el('datalist', { id: 'occasions' },
+    ['Noël ' + annee, 'Saint-Nicolas ' + annee, 'Fête des mères', 'Fête des pères', 'Anniversaire de '].map(o => el('option', { value: o })));
+  const mot = el('textarea', { maxlength: 200, placeholder: 'Ex. : budget 30 €, cadeaux le 24 au soir' });
+  const coches = new Map();
+  const exclus = new Map();   // donneur → Set des receveurs exclus
+  membres.forEach(m => { coches.set(m.p, true); exclus.set(m.p, new Set()); });
+  const zoneEx = el('div');
+  const erreurZone = el('p', { class: 'avis', style: 'display:none' });
+
+  function rendreExclusions() {
+    const part = membres.filter(m => coches.get(m.p));
+    zoneEx.replaceChildren(...part.map(m => {
+      const ex = exclus.get(m.p);
+      const resume = el('span', { class: 'discret' }, ex.size ? 'Pas à ' + part.filter(x => ex.has(x.p)).map(x => x.prenom).join(', ') : 'Aucune exclusion');
+      return el('details', { class: 'exclu' },
+        el('summary', {}, pastille(m.animal, m.prenom, 26), el('span', { class: 'exclu-nom' }, m.prenom), resume),
+        el('p', { class: 'discret' }, m.prenom + ' ne peut pas offrir à :'),
+        part.filter(x => x.p !== m.p).map(x => el('label', { class: 'case' },
+          el('input', { type: 'checkbox', checked: ex.has(x.p), onchange: (ev) => { ev.target.checked ? ex.add(x.p) : ex.delete(x.p); const o = zoneEx.querySelectorAll('details'); const ouverts = [...o].map(d => d.open); rendreExclusions(); zoneEx.querySelectorAll('details').forEach((d, i) => { d.open = ouverts[i]; }); } }),
+          pastille(x.animal, x.prenom, 22), x.prenom)));
+    }));
+  }
+
+  const listeP = el('div', {}, membres.map(m => el('label', { class: 'case' },
+    el('input', { type: 'checkbox', checked: true, onchange: (ev) => { coches.set(m.p, ev.target.checked); rendreExclusions(); } }),
+    pastille(m.animal, m.prenom, 26), m.prenom + (m.moi ? ' (toi)' : ''))));
+  rendreExclusions();
+
+  const btn = el('button', { class: 'btn large', onclick: async () => {
+    const participants = membres.filter(m => coches.get(m.p)).map(m => m.p);
+    erreurZone.style.display = 'none';
+    if (!nom.value.trim()) return toast('Donne un nom au tirage');
+    if (participants.length < 3) return toast('Il faut au moins trois personnes pour garder le secret');
+    const exclusions = {};
+    participants.forEach(a => { exclusions[a] = [...exclus.get(a)].filter(x => participants.includes(x)); });
+    if (!confirm('Lancer le tirage « ' + nom.value.trim() + ' » pour ' + participants.length + ' personnes ?')) return;
+    btn.disabled = true;
+    try {
+      await appel('tirer', { nom: nom.value, mot: mot.value, participants, exclusions });
+      vue = 'moi'; await charger();
+      toast('La casquette a tiré au sort ! Chaque personne découvre la sienne dans l\'appli.');
+    } catch (err) {
+      btn.disabled = false;
+      erreurZone.textContent = err.message; erreurZone.style.display = '';
+    }
+  }}, '🎩 Lancer le tirage');
+
+  return el('div', {},
+    el('h1', {}, 'Nouveau tirage'),
+    el('p', { class: 'chapo' }, 'La casquette tire au sort à qui chaque personne offre. Personne ne peut se tirer soi-même, et personne, pas même toi, ne verra les paires.'),
+    el('div', { class: 'form' },
+      el('label', {}, 'Nom du tirage'), nom, occasions,
+      el('label', {}, 'Un mot pour tout le monde ', el('span', { class: 'opt' }, '(facultatif)')), mot),
+    el('h2', {}, 'Qui participe ?'), el('div', { class: 'form' }, listeP),
+    el('h2', {}, 'Exclusions'),
+    el('p', { class: 'discret', style: 'margin-bottom:8px' }, 'Ouvre un prénom pour dire à qui cette personne ne peut pas offrir (par exemple son ou sa partenaire). Une exclusion ne vaut que dans un sens.'),
+    zoneEx, erreurZone,
+    el('div', { style: 'margin-top:18px' }, btn),
+    el('button', { class: 'btn lien retour', onclick: () => { vue = 'reglages'; rendre(); } }, '← Retour'));
+}
+
 /* Réglages */
 function vueReglages() {
   const d = donnees;
@@ -1063,6 +1218,7 @@ function vueReglages() {
       el('span', { class: 'discret' }, 'Dans Mes Cadeaux, exporte ta liste, puis choisis ici le fichier obtenu. Tes idées arrivent dans « À offrir », visibles par toi seule.')),
     boutonImport('Choisir le fichier')));
 
+  if (moi.admin && d.admin) bloc.append(blocTirages());
   if (moi.admin && d.admin) bloc.append(blocGestion());
 
   bloc.append(el('div', { class: 'reglage' },
