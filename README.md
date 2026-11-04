@@ -1,10 +1,16 @@
-# Sorpresa
+# La Casquette
+
+*Anciennement Sorpresa.* En hommage au patriarche et à sa casquette en tweed.
 
 Des listes d'envies entre proches, sans gâcher la surprise.
 
 1. **Ajoute tes envies** : un titre, une précision, un lien si tu veux.
 2. **Réserve ce que tu offres** dans les listes des autres. Seuls les autres le voient, jamais la personne concernée.
 3. **Quand tu reçois un cadeau**, retire-le de ta liste.
+
+L'onglet **À offrir** reprend aussi l'usage de Mes Cadeaux : tes réservations et tes propres
+idées (pour n'importe qui, du groupe ou non), avec prix, « acheté » et budget, visibles par toi seule.
+Un fichier exporté de Mes Cadeaux s'importe depuis ⚙︎.
 
 ## Comment c'est fait
 
@@ -28,3 +34,13 @@ Rien ne s'efface tout seul.
 
 Le tout premier groupe se crée librement ; ensuite, seule une personne qui gère déjà
 un groupe (sa clé de gestion est gardée sur son téléphone) peut en créer un autre.
+
+## Animaux
+
+Chacun choisit son animal (un par personne dans le groupe) : les 12 animaux aquatiques de Corsia
+et 13 autres, soit 25. Images **Fluent Emoji** de Microsoft, licence MIT (`animaux/LICENCE-Fluent-Emoji.txt`).
+
+## Plusieurs groupes
+
+Un même téléphone peut faire partie de plusieurs groupes (famille, amies…) : on passe de l'un à l'autre
+en touchant le nom du groupe, en haut. Le lien de secours les contient tous.

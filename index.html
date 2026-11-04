@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Sorpresa</title>
+<title>La Casquette</title>
 <meta name="description" content="Des listes d'envies entre proches, sans gâcher la surprise.">
 <meta name="theme-color" content="#a3203a">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Sorpresa">
+<meta name="apple-mobile-web-app-title" content="La Casquette">
 <meta name="referrer" content="no-referrer">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icones/favicon-32.png">
@@ -69,8 +69,17 @@ a { color: var(--ruban); }
   max-width: 560px; margin: 0 auto;
 }
 .entete-haut { display: flex; align-items: center; gap: 10px; }
-.marque { font-size: 1.5rem; font-weight: 750; letter-spacing: -.02em; color: var(--ruban); }
-.groupe-nom { color: var(--doux); font-size: .95rem; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.marque { font-size: 1.35rem; white-space: nowrap; font-weight: 750; letter-spacing: -.02em; color: var(--ruban); }
+.groupe-nom {
+  color: var(--doux); font-size: .95rem; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  background: none; border: none; text-align: left; cursor: pointer; padding: 8px 0;
+}
+.groupe-choix {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; text-align: left;
+  background: var(--carte); border: 1px solid var(--trait); border-radius: 14px; padding: 14px 16px; margin-bottom: 8px; cursor: pointer;
+}
+.groupe-choix.actif { border: 2px solid var(--ruban); }
+.groupe-choix-nom { font-weight: 650; }
 .icone-btn {
   border: 1px solid var(--trait); background: var(--carte); border-radius: 999px;
   width: 40px; height: 40px; display: grid; place-items: center; cursor: pointer; font-size: 1.1rem;
@@ -171,6 +180,53 @@ ol.mode li { margin-bottom: 8px; }
 
 .retour { margin: 14px 0 0; }
 
+.budget { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+.budget > div { background: var(--carte); border: 1px solid var(--trait); border-radius: 12px; padding: 10px 8px; text-align: center; }
+.budget-lib { font-size: .78rem; color: var(--doux); text-transform: uppercase; letter-spacing: .04em; }
+.budget-val { font-weight: 700; font-size: 1.05rem; margin-top: 2px; white-space: nowrap; }
+.budget-val.vert { color: var(--vert); }
+h2.pour { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+h2.pour .discret { font-weight: 500; }
+.ligne {
+  display: flex; align-items: flex-start; gap: 12px; background: var(--carte); border: 1px solid var(--trait);
+  border-radius: 14px; padding: 12px 12px 10px; margin-bottom: 8px; box-shadow: var(--ombre);
+}
+.ligne.faite { opacity: .62; }
+.ligne.faite .ligne-titre { text-decoration: line-through; text-decoration-color: var(--doux); }
+.coche {
+  flex: none; width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--trait); background: var(--fond);
+  cursor: pointer; font-weight: 800; color: #fff; display: grid; place-items: center; margin-top: 1px; font-size: .95rem;
+}
+.coche.oui { background: var(--vert); border-color: var(--vert); }
+.ligne-corps { flex: 1; min-width: 0; }
+.ligne-titre { font-weight: 650; }
+.ligne-sous { font-size: .88rem; color: var(--doux); }
+.ligne-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: .9rem; margin-top: 2px; }
+.ligne-actions a { text-decoration: none; }
+.ligne-actions .btn.lien { padding: 4px 0; font-size: .88rem; }
+input.prix {
+  flex: none; width: 82px; text-align: right; border: 1px solid var(--trait); border-radius: 10px;
+  padding: 7px 8px; background: var(--fond); font-size: 16px;
+}
+
+.pastille { display: inline-grid; place-items: center; border-radius: 50%; flex: none; vertical-align: middle; overflow: hidden; }
+.pastille img { width: 82%; height: 82%; object-fit: contain; }
+.pastille.initiale { background: var(--trait); color: var(--doux); font-weight: 700; }
+.onglet { display: inline-flex; align-items: center; gap: 6px; }
+.onglet .pastille { margin-left: -6px; }
+.onglet.actif .pastille.initiale { background: rgba(255,255,255,.25); color: #fff; }
+h1 .pastille, h2 .pastille { margin-right: 8px; }
+.animaux { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin: 8px 0 18px; }
+.animal {
+  border: 1.5px solid var(--trait); background: var(--carte); border-radius: 14px; padding: 8px 2px 6px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: .68rem; font-weight: 600; min-height: 84px;
+  line-height: 1.15; text-align: center; overflow-wrap: anywhere; hyphens: auto;
+}
+.animal img { width: 40px; height: 40px; }
+.animal[aria-pressed="true"] { border: 3px solid var(--ruban); background: var(--ruban-pale); }
+.animal:disabled { opacity: .35; cursor: default; }
+.animal .pris { font-weight: 400; color: var(--doux); font-size: .65rem; }
+
 #toast {
   position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(20px);
   background: var(--encre); color: var(--fond); padding: 11px 18px; border-radius: 999px; font-size: .95rem;
@@ -188,24 +244,85 @@ ol.mode li { margin-bottom: 8px; }
 <script>
 'use strict';
 
-/* Adresse du petit serveur (même hébergement que Grazie, dans www/sorpresa). */
+/* Adresse du petit serveur (même hébergement que Grazie, dans www/sorpresa).
+   La Casquette s'appelait d'abord Sorpresa : le chemin du serveur et la clé de mémoire gardent ce nom,
+   pour que rien ne se perde sur les téléphones déjà installés. */
 const API_PAR_DEFAUT = 'https://azertida.alwaysdata.net/sorpresa/api.php';
 const EN_LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname);
 const API = (EN_LOCAL && new URLSearchParams(location.search).get('api')) || API_PAR_DEFAUT;
 const CLE = 'sorpresa';
 
-/* ---------- Mémoire du téléphone ---------- */
-function lire() {
-  try { return JSON.parse(localStorage.getItem(CLE)) || null; } catch (e) { return null; }
+/* ---------- Mémoire du téléphone ----------
+   Plusieurs groupes : { groupes: [{ g, m, j, admin?, nom? }], actif }.
+   Une ancienne mémoire à un seul groupe ({ g, m, j, admin? }) est reprise telle quelle. */
+function lireEtat() {
+  let brut = null;
+  try { brut = JSON.parse(localStorage.getItem(CLE)); } catch (e) {}
+  if (brut && Array.isArray(brut.groupes)) {
+    const groupes = brut.groupes.filter(x => x && x.m && x.j && x.g);
+    return { groupes, actif: Math.min(Math.max(0, brut.actif | 0), Math.max(0, groupes.length - 1)) };
+  }
+  if (brut && brut.m && brut.j && brut.g) return { groupes: [brut], actif: 0 };
+  return { groupes: [], actif: 0 };
 }
-function garder(s) {
-  try { localStorage.setItem(CLE, JSON.stringify(s)); } catch (e) {}
+function enregistrer() {
+  try { localStorage.setItem(CLE, JSON.stringify(etat)); } catch (e) {}
 }
+/* Garde ce groupe (nouveau ou modifié) et en fait le groupe affiché. */
+function garder(x) {
+  let i = etat.groupes.indexOf(x);
+  if (i < 0) i = etat.groupes.findIndex(y => y.m === x.m);
+  if (i < 0) { etat.groupes.push(x); i = etat.groupes.length - 1; } else etat.groupes[i] = x;
+  etat.actif = i; moi = x;
+  enregistrer();
+}
+/* Retire le groupe affiché de ce téléphone, et passe au suivant s'il y en a un. */
 function oublier() {
-  try { localStorage.removeItem(CLE); } catch (e) {}
+  const i = etat.groupes.indexOf(moi);
+  if (i >= 0) etat.groupes.splice(i, 1);
+  etat.actif = 0; moi = etat.groupes[0] || null;
+  enregistrer();
+}
+function choisirGroupe(i) {
+  etat.actif = i; moi = etat.groupes[i]; enregistrer();
+  donnees = null; vue = 'moi'; edition = null;
+  app.replaceChildren(el('div', { class: 'chargement' }, 'Un instant…'));
+  charger();
+}
+const cleGestion = () => (etat.groupes.find(x => x.admin) || {}).admin || '';
+
+/* Les animaux : ceux de Corsia (aquatiques) et ceux d'ici. Images Fluent Emoji (Microsoft, MIT), dossier animaux/. */
+const ANIMAUX = [
+  ['poulpe', 'Poulpe'], ['capybara', 'Capybara'], ['loutre', 'Loutre'], ['tortue', 'Tortue'],
+  ['meduse', 'Méduse'], ['dauphin', 'Dauphin'], ['phoque', 'Phoque'], ['manchot', 'Manchot'],
+  ['baleine', 'Baleine'], ['grenouille', 'Grenouille'], ['raie', 'Raie manta'], ['hippocampe', 'Hippocampe'],
+  ['renard', 'Renard'], ['herisson', 'Hérisson'], ['ecureuil', 'Écureuil'], ['chouette', 'Chouette'],
+  ['chat', 'Chat'], ['chien', 'Chien'], ['abeille', 'Abeille'],
+  ['panda', 'Panda'], ['koala', 'Koala'], ['paresseux', 'Paresseux'],
+  ['perroquet', 'Perroquet'], ['paon', 'Paon'], ['papillon', 'Papillon'],
+];
+const FOND = {
+  poulpe: '#FBE3DA', capybara: '#F3E6D6', loutre: '#F3E6D6', tortue: '#E2EEDA', meduse: '#EEE5F7', dauphin: '#E3EEF4',
+  phoque: '#E9ECEF', manchot: '#E9ECEF', baleine: '#E3EEF4', grenouille: '#E2EEDA', raie: '#E3EEF4', hippocampe: '#FBEFD5',
+  renard: '#FBE3DA', herisson: '#F3E6D6', ecureuil: '#FBEFD5', chouette: '#F3E6D6', chat: '#FBEFD5', chien: '#F3E6D6',
+  abeille: '#FBEFD5', panda: '#EEE5F7', koala: '#E9ECEF', paresseux: '#F3E6D6', perroquet: '#E2EEDA',
+  paon: '#E3EEF4', papillon: '#FBE3DA',
+};
+const NOM_ANIMAL = Object.fromEntries(ANIMAUX);
+
+/* Une pastille ronde : l'animal de la personne, ou à défaut l'initiale de son prénom. */
+function pastille(animal, prenom, taille = 26) {
+  const st = 'width:' + taille + 'px;height:' + taille + 'px';
+  if (animal && FOND[animal]) {
+    return el('span', { class: 'pastille', style: st + ';background:' + FOND[animal], title: NOM_ANIMAL[animal] },
+      el('img', { src: 'animaux/' + animal + '.png', alt: '' }));
+  }
+  return el('span', { class: 'pastille initiale', style: st + ';font-size:' + Math.round(taille * .48) + 'px' },
+    (String(prenom || '?').trim()[0] || '?').toUpperCase());
 }
 
-let moi = lire();        // { g, m, j, admin? }
+let etat = lireEtat();
+let moi = etat.groupes[etat.actif] || null;   // le groupe affiché : { g, m, j, admin?, nom? }
 let donnees = null;      // dernière réponse de « liste »
 let vue = 'moi';         // 'moi', 'offrir', 'reglages' ou l'alias d'une personne
 let edition = null;      // id de l'envie en cours de modification, ou 'nouvelle'
@@ -297,33 +414,55 @@ async function charger() {
       return;
     }
   }
-  if (vue !== 'moi' && vue !== 'offrir' && vue !== 'reglages' && !donnees.personnes.some(p => p.p === vue)) vue = 'moi';
+  if (moi && moi.nom !== donnees.nom) { moi.nom = donnees.nom; enregistrer(); }
+  if (vue !== 'moi' && vue !== 'offrir' && vue !== 'reglages' && vue !== 'animal' && !donnees.personnes.some(p => p.p === vue)) vue = 'moi';
   rendre();
 }
 
 /* ---------- Écrans hors groupe ---------- */
 function ecranAccueil() {
   app.replaceChildren(el('div', { class: 'page' },
-    el('h1', { style: 'margin-top:48px' }, el('span', { style: 'color:var(--ruban)' }, 'Sorpresa')),
+    el('h1', { style: 'margin-top:48px' }, el('span', { style: 'color:var(--ruban)' }, 'La Casquette')),
     el('p', { class: 'chapo' }, 'Des listes d\'envies entre proches, sans gâcher la surprise.'),
     modeEmploi(),
     formulaireColler(),
-    el('button', { class: 'btn second large', onclick: ecranCreer }, 'Créer un groupe')
+    el('button', { class: 'btn second large', onclick: ecranCreer }, 'Créer un groupe'),
+    etat.groupes.length ? el('button', { class: 'btn lien retour', onclick: ecranGroupes }, '← Mes groupes') : null
   ));
+}
+
+/* Mes groupes : passer de l'un à l'autre, en rejoindre ou en créer un autre */
+function ecranGroupes() {
+  const bloc = el('div', { class: 'page' },
+    el('h1', { style: 'margin-top:40px' }, 'Mes groupes'),
+    el('p', { class: 'chapo' }, 'Chaque groupe a ses listes et ses réservations. Touche celui que tu veux ouvrir.'));
+  etat.groupes.forEach((x, i) => {
+    bloc.append(el('button', { class: 'groupe-choix' + (x === moi ? ' actif' : ''), onclick: () => choisirGroupe(i) },
+      el('span', { class: 'groupe-choix-nom' }, x.nom || 'Groupe sans nom'),
+      el('span', { class: 'discret' }, (x.admin ? 'Tu le gères' : '') + (x === moi ? (x.admin ? ' · ' : '') + 'ouvert' : ''))));
+  });
+  bloc.append(el('h2', {}, 'Ajouter un groupe'), formulaireColler());
+  if (cleGestion()) bloc.append(el('button', { class: 'btn second large', onclick: ecranCreer }, 'Créer un nouveau groupe'));
+  if (moi) bloc.append(el('button', { class: 'btn lien retour', onclick: () => { if (donnees) { vue = 'moi'; rendre(); } else charger(); } }, '← Retour'));
+  app.replaceChildren(bloc);
 }
 
 /* Coller un lien : invitation (#g=…) ou lien de secours (#s=…).
    Indispensable dans l'appli installée, qui n'a pas de barre d'adresse. */
 function formulaireColler() {
-  const champ = el('input', { type: 'text', placeholder: 'Colle ici ton lien Sorpresa', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false' });
+  const champ = el('input', { type: 'text', placeholder: 'Colle ici ton lien', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false' });
   return el('form', { class: 'form', novalidate: true, onsubmit: async (ev) => {
     ev.preventDefault();
     const t = champ.value.trim();
     const h = new URLSearchParams((t.includes('#') ? t.slice(t.indexOf('#') + 1) : t));
     if (h.get('s')) return restaurer(h.get('s'));
     const g = h.get('g');
-    if (g && /^[0-9a-f]{18}$/.test(g)) return ecranRejoindre(g, (h.get('p') || '').replace(/[^0-9a-f]/g, '').slice(0, 10));
-    toast('Ce n\'est pas un lien Sorpresa');
+    if (g && /^[0-9a-f]{18}$/.test(g)) {
+      const i = etat.groupes.findIndex(x => x.g === g);
+      if (i >= 0) { toast('Tu fais déjà partie de ce groupe'); return choisirGroupe(i); }
+      return ecranRejoindre(g, (h.get('p') || '').replace(/[^0-9a-f]/g, '').slice(0, 10));
+    }
+    toast('Ce n\'est pas un lien de La Casquette');
   }},
     el('label', {}, 'Tu as reçu un lien d\'invitation, ou tu as ton lien de secours ?'),
     champ,
@@ -342,31 +481,40 @@ function memoireSeparee() {
 }
 
 function lienSecours() {
-  return location.origin + location.pathname + '#s=' + [moi.m, moi.j].concat(moi.admin ? [moi.admin] : []).join('.');
+  return location.origin + location.pathname + '#s=' +
+    etat.groupes.map(x => [x.m, x.j].concat(x.admin ? [x.admin] : []).join('.')).join('~');
 }
 
 async function restaurer(code) {
-  const [m, j, admin] = String(code).split('.');
-  if (!/^[0-9a-f]{12}$/.test(m || '') || !/^[0-9a-f]{32}$/.test(j || '') || (admin && !/^[0-9a-f]{32}$/.test(admin))) {
+  const morceaux = String(code).split('~').map(t => t.split('.'));
+  const valide = ([m, j, admin]) => /^[0-9a-f]{12}$/.test(m || '') && /^[0-9a-f]{32}$/.test(j || '') && (!admin || /^[0-9a-f]{32}$/.test(admin));
+  if (!morceaux.length || !morceaux.every(valide)) {
     toast('Ce lien de secours est incomplet');
-    if (!moi || !moi.m) ecranAccueil();
+    if (!moi) ecranAccueil();
     return;
   }
-  const deja = lire();
-  if (deja && deja.m && deja.m !== m && !confirm('Ce téléphone a déjà une place dans un groupe Sorpresa. La remplacer ?')) return;
-  try {
-    const r = await appel('retrouver', { m, j, g: undefined });
-    moi = { g: r.g, m, j };
-    if (admin) moi.admin = admin;
-    garder(moi);
-    history.replaceState(null, '', location.pathname + location.search);
-    vue = 'moi';
-    await charger();
-    toast('Te revoilà !');
-  } catch (e) {
-    toast(e.statut === 403 ? 'Ce lien ne correspond plus à personne dans le groupe' : e.message);
-    if (!moi || !moi.m) ecranAccueil();
+  let retrouves = 0, perdus = 0, dernier = null;
+  for (const [m, j, admin] of morceaux) {
+    try {
+      const r = await appel('retrouver', { m, j, g: undefined });
+      const x = etat.groupes.find(y => y.m === m) || { m, j };
+      x.g = r.g; x.j = j; x.nom = r.nom;
+      if (admin) x.admin = admin;
+      garder(x); dernier = x; retrouves++;
+    } catch (e) {
+      if (e.statut === 403) perdus++;
+      else { toast(e.message); if (!moi) ecranAccueil(); return; }
+    }
   }
+  history.replaceState(null, '', location.pathname + location.search);
+  if (!dernier) {
+    toast('Ce lien ne correspond plus à personne');
+    if (moi) charger(); else ecranAccueil();
+    return;
+  }
+  choisirGroupe(etat.groupes.indexOf(dernier));
+  toast(retrouves > 1 ? 'Te revoilà, dans tes ' + retrouves + ' groupes !' : 'Te revoilà !');
+  if (perdus) setTimeout(() => toast(perdus > 1 ? perdus + ' groupes n\'existent plus' : 'Un groupe n\'existe plus'), 2800);
 }
 
 function modeEmploi() {
@@ -386,14 +534,12 @@ function ecranCreer() {
     if (!prenom.value.trim()) return toast('Il manque ton prénom');
     btn.disabled = true;
     try {
-      const ancien = lire();
       const champs = { nom: nom.value };
-      if (ancien && ancien.admin) champs.cle_existante = ancien.admin;
+      if (cleGestion()) champs.cle_existante = cleGestion();
       const c = await appel('creer_groupe', { ...champs, g: undefined, m: undefined });
       const r = await appel('rejoindre', { g: c.g, prenom: prenom.value, m: undefined });
-      moi = { g: c.g, m: r.m, j: r.j, admin: c.admin };
-      garder(moi);
-      vue = 'moi';
+      garder({ g: c.g, m: r.m, j: r.j, admin: c.admin, nom: nom.value.trim() });
+      donnees = null; vue = 'animal';
       await charger();
       toast('Groupe créé. Invite les autres depuis ⚙︎');
     } catch (e) {
@@ -409,7 +555,7 @@ function ecranCreer() {
     el('h1', { style: 'margin-top:40px' }, 'Créer un groupe'),
     el('p', { class: 'chapo' }, 'Tu en seras la gestionnaire : toi seule pourras voir qui est inscrit, changer le lien ou retirer quelqu\'un.'),
     form,
-    el('button', { class: 'btn lien', onclick: ecranAccueil }, '← Retour')
+    el('button', { class: 'btn lien', onclick: etat.groupes.length ? ecranGroupes : ecranAccueil }, '← Retour')
   ));
   prenom.focus();
 }
@@ -427,22 +573,19 @@ async function ecranRejoindre(g, parrain) {
     app.replaceChildren(el('div', { class: 'page' }, el('div', { class: 'vide' }, e.message)));
     return;
   }
-  const deja = lire();
   const prenom = el('input', { type: 'text', maxlength: 20, placeholder: 'Ton prénom', autocomplete: 'given-name' });
   const btn = el('button', { class: 'btn large', type: 'submit' }, 'Entrer');
   const form = el('form', { class: 'form', onsubmit: async (ev) => {
     ev.preventDefault();
     if (!prenom.value.trim()) return toast('Il manque ton prénom');
-    if (deja && deja.m && !confirm('Ce téléphone fait déjà partie d\'un autre groupe Sorpresa. Le remplacer par celui-ci ?')) return;
     btn.disabled = true;
     try {
       const r = await appel('rejoindre', { g, prenom: prenom.value, parrain: parrain || '', m: undefined });
-      moi = { g, m: r.m, j: r.j };
-      garder(moi);
+      garder({ g, m: r.m, j: r.j, nom });
       history.replaceState(null, '', location.pathname + location.search);
-      vue = 'moi';
+      donnees = null; vue = 'animal';
       await charger();
-      toast('Bienvenue ! Ajoute ta première envie.');
+      toast('Bienvenue !');
     } catch (e) {
       btn.disabled = false;
       toast(e.message);
@@ -452,11 +595,12 @@ async function ecranRejoindre(g, parrain) {
     el('div', { class: 'rangee' }, btn)
   );
   app.replaceChildren(el('div', { class: 'page' },
-    el('h1', { style: 'margin-top:40px' }, nom ? 'Tu rejoins « ' + nom + ' »' : 'Tu rejoins un groupe Sorpresa'),
+    el('h1', { style: 'margin-top:40px' }, nom ? 'Tu rejoins « ' + nom + ' »' : 'Tu rejoins un groupe de La Casquette'),
     el('p', { class: 'chapo' }, 'Des listes d\'envies entre proches, sans gâcher la surprise.'),
     modeEmploi(),
-    memoireSeparee() ? el('div', { class: 'principe' },
-      el('strong', {}, 'Tu veux Sorpresa sur ton écran d\'accueil ? '),
+    etat.groupes.length ? el('div', { class: 'principe' }, 'Ce groupe s\'ajoutera à ceux que tu as déjà sur ce téléphone.') : null,
+    memoireSeparee() && !etat.groupes.length ? el('div', { class: 'principe' },
+      el('strong', {}, 'Tu veux La Casquette sur ton écran d\'accueil ? '),
       'Fais-le avant d\'entrer : l\'appli installée ne voit pas ce qui se passe ici. ',
       'Copie ce lien, ajoute la page à l\'écran d\'accueil (bouton Partager), ouvre l\'appli et colle-le.',
       el('div', { style: 'margin-top:10px' },
@@ -465,16 +609,20 @@ async function ecranRejoindre(g, parrain) {
           catch (e) { prompt('Copie ce lien :', location.href); }
         }}, 'Copier le lien'))
     ) : null,
-    form
+    form,
+    etat.groupes.length ? el('button', { class: 'btn lien retour', onclick: ecranGroupes }, '← Mes groupes') : null
   ));
 }
 
 function ecranPerdu() {
   app.replaceChildren(el('div', { class: 'page' }, el('div', { class: 'vide' },
     el('div', { class: 'grand' }, '🎁'),
-    el('p', {}, 'Ce téléphone ne fait plus partie du groupe.'),
+    el('p', {}, 'Ce téléphone ne fait plus partie du groupe' + (moi && moi.nom ? ' « ' + moi.nom + ' »' : '') + '.'),
     el('p', { class: 'discret', style: 'margin-top:8px' }, 'Pour y revenir, ouvre à nouveau le lien d\'invitation.'),
-    el('div', { style: 'margin-top:18px' }, el('button', { class: 'btn second', onclick: () => { oublier(); moi = null; ecranAccueil(); } }, 'Repartir de zéro'))
+    el('div', { style: 'margin-top:18px' }, el('button', { class: 'btn second', onclick: () => {
+      oublier(); donnees = null;
+      if (moi) choisirGroupe(etat.actif); else ecranAccueil();
+    } }, 'Retirer ce groupe de ce téléphone'))
   )));
 }
 
@@ -482,28 +630,30 @@ function ecranPerdu() {
 function rendre() {
   const d = donnees;
   const autres = d.personnes.filter(p => !p.moi);
+  const moiP = d.personnes.find(p => p.moi);
   const mesEnvies = d.envies.filter(e => e.mienne);
   const mesRes = d.envies.filter(e => e.ma_reservation);
   const retirees = d.envies.filter(e => e.retiree);
   const parPersonne = (alias) => d.envies.filter(e => e.p === alias && !e.retiree);
 
-  const onglet = (cle, libelle, nb, extra) => el('button', {
+  const onglet = (cle, libelle, nb, extra, past) => el('button', {
     class: 'onglet' + (vue === cle ? ' actif' : '') + (extra ? ' ' + extra : ''),
     onclick: () => { vue = cle; edition = null; rendre(); window.scrollTo(0, 0); }
-  }, libelle, nb != null ? el('span', { class: 'nb' }, nb) : null,
+  }, past || null, libelle, nb != null ? el('span', { class: 'nb' }, nb) : null,
      cle === 'offrir' && retirees.length ? el('span', { class: 'point', title: 'À voir' }) : null);
 
   const entete = el('header', { class: 'entete' },
     el('div', { class: 'entete-haut' },
-      el('div', { class: 'marque' }, 'Sorpresa'),
-      el('div', { class: 'groupe-nom' }, d.nom || ''),
+      el('div', { class: 'marque' }, 'La Casquette'),
+      el('button', { class: 'groupe-nom', onclick: ecranGroupes, 'aria-label': 'Changer de groupe' },
+        (d.nom || 'Mon groupe') + (etat.groupes.length > 1 ? ' · ' + etat.groupes.length : ''), el('span', { 'aria-hidden': 'true' }, ' ▾')),
       el('button', { class: 'icone-btn', 'aria-label': 'Actualiser', onclick: async () => { await charger(); toast('À jour'); } }, '↻'),
       el('button', { class: 'icone-btn', 'aria-label': 'Réglages', onclick: () => { vue = 'reglages'; rendre(); } }, '⚙︎')
     ),
     el('nav', { class: 'onglets' },
-      onglet('moi', 'Ma liste', mesEnvies.length),
-      autres.map(p => onglet(p.p, p.prenom, parPersonne(p.p).length)),
-      onglet('offrir', 'À offrir', mesRes.filter(e => !e.retiree).length, 'offrir')
+      onglet('moi', 'Ma liste', mesEnvies.length, null, moiP && moiP.animal ? pastille(moiP.animal, moiP.prenom, 24) : null),
+      autres.map(p => onglet(p.p, p.prenom, parPersonne(p.p).length, null, pastille(p.animal, p.prenom, 24))),
+      onglet('offrir', 'À offrir', elementsAOffrir().filter(i => !i.achete).length, 'offrir')
     )
   );
 
@@ -511,6 +661,7 @@ function rendre() {
   if (vue === 'moi') contenu = vueMaListe(mesEnvies, autres.length === 0);
   else if (vue === 'offrir') contenu = vueOffrir(mesRes, retirees);
   else if (vue === 'reglages') contenu = vueReglages();
+  else if (vue === 'animal') contenu = vueAnimal();
   else {
     const p = d.personnes.find(x => x.p === vue);
     contenu = vueAutre(p, parPersonne(p.p), retirees.filter(e => e.p === p.p));
@@ -527,6 +678,11 @@ function rendre() {
 /* Ma liste */
 function vueMaListe(envies, seule) {
   const bloc = el('div');
+  const moiP = donnees.personnes.find(p => p.moi);
+  if (moiP && !moiP.animal) {
+    bloc.append(el('button', { class: 'bandeau', style: 'border-color:var(--ruban);background:var(--ruban-pale)', onclick: () => { vue = 'animal'; rendre(); } },
+      '🐾 Choisis ton animal : c\'est lui qui te représentera auprès des autres.'));
+  }
   bloc.append(el('div', { class: 'principe', style: 'margin-top:16px' },
     'Tu ne sauras jamais si une de tes envies est réservée : c\'est tout le principe.'));
 
@@ -607,7 +763,7 @@ async function retirer(e) {
 /* Liste de quelqu'un d'autre */
 function vueAutre(p, envies, retirees) {
   const bloc = el('div');
-  bloc.append(el('h1', {}, 'Les envies de ' + p.prenom));
+  bloc.append(el('h1', {}, pastille(p.animal, p.prenom, 40), 'Les envies de ' + p.prenom));
   bloc.append(el('p', { class: 'chapo' }, p.prenom + ' ne voit pas ce qui est réservé. Les autres, si : ça évite les doublons.'));
   for (const e of retirees) bloc.append(carteRetiree(e, false));
   if (!envies.length) {
@@ -662,23 +818,198 @@ async function vu(e) {
   catch (err) { toast(err.message); }
 }
 
-/* À offrir : toutes mes réservations */
+/* À offrir : mes réservations et mes notes privées, personne par personne (l'ancienne Mes Cadeaux) */
+const euros = (v) => (v || 0).toLocaleString('fr-BE', { style: 'currency', currency: 'EUR' });
+const cle = (t) => String(t || '').trim().toLocaleLowerCase('fr');
+
+function elementsAOffrir() {
+  const d = donnees;
+  const prenomDe = {};
+  d.personnes.forEach(p => { prenomDe[p.p] = p.prenom; });
+  const items = [];
+  for (const e of d.envies) {
+    if (!e.ma_reservation || e.retiree) continue;
+    items.push({ genre: 'res', id: e.id, pour: prenomDe[e.p] || '?', titre: e.titre, precision: e.precision, lien: e.lien,
+                 prix: e.prix, achete: !!e.achete, modifiee_apres: e.modifiee_apres, envie: e });
+  }
+  for (const n of (d.notes || [])) items.push({ genre: 'note', id: n.id, pour: n.pour, titre: n.titre, prix: n.prix, achete: n.achete });
+  return items;
+}
+
 function vueOffrir(mesRes, retirees) {
   const bloc = el('div');
+  const items = elementsAOffrir();
+  const total = items.reduce((t, i) => t + (i.prix || 0), 0);
+  const achete = items.reduce((t, i) => t + (i.achete ? (i.prix || 0) : 0), 0);
+
   bloc.append(el('h1', {}, 'À offrir'));
-  bloc.append(el('p', { class: 'chapo' }, 'Tout ce que tu as réservé, personne par personne.'));
+  bloc.append(el('p', { class: 'chapo' }, 'Ce que tu as réservé et tes idées à toi. Les prix et ce qui est acheté, toi seule les vois.'));
+  if (items.length) {
+    bloc.append(el('div', { class: 'budget' },
+      el('div', {}, el('div', { class: 'budget-lib' }, 'Total'), el('div', { class: 'budget-val' }, euros(total))),
+      el('div', {}, el('div', { class: 'budget-lib' }, 'Acheté'), el('div', { class: 'budget-val vert' }, euros(achete))),
+      el('div', {}, el('div', { class: 'budget-lib' }, 'Reste'), el('div', { class: 'budget-val' }, euros(total - achete)))));
+  }
   for (const e of retirees) bloc.append(carteRetiree(e, true));
-  const actives = mesRes.filter(e => !e.retiree);
-  if (!actives.length && !retirees.length) {
+
+  if (edition === 'note') bloc.append(formulaireNote());
+  else bloc.append(el('button', { class: 'ajout', onclick: () => { edition = 'note'; rendre(); } }, '＋ Noter une idée de cadeau'));
+
+  if (!items.length && !retirees.length && edition !== 'note') {
     bloc.append(el('div', { class: 'vide' }, el('div', { class: 'grand' }, '🛍️'),
-      'Rien de réservé pour l\'instant.', el('br'), 'Ouvre la liste de quelqu\'un et touche « Je l\'offre ».'));
+      'Rien pour l\'instant.', el('br'),
+      'Réserve une envie dans la liste de quelqu\'un, ou note une idée pour n\'importe qui, même hors du groupe.'));
+    bloc.append(boutonImport('Tu utilisais Mes Cadeaux ? Importer son fichier'));
+    return bloc;
   }
-  for (const p of donnees.personnes) {
-    const siennes = actives.filter(e => e.p === p.p);
-    if (!siennes.length) continue;
-    bloc.append(el('h2', {}, 'Pour ' + p.prenom));
-    for (const e of siennes) bloc.append(carteAutre(e));
+
+  // Les membres du groupe d'abord, dans l'ordre du groupe, puis les autres par ordre alphabétique.
+  const groupes = new Map();
+  for (const p of donnees.personnes) if (!p.moi) groupes.set(cle(p.prenom), { nom: p.prenom, animal: p.animal, membre: true, items: [] });
+  const dehors = [];
+  for (const i of items) {
+    const k = cle(i.pour);
+    if (!groupes.has(k)) { groupes.set(k, { nom: i.pour, items: [] }); dehors.push(k); }
+    groupes.get(k).items.push(i);
   }
+  for (const [, g] of groupes) {
+    if (!g.items.length) continue;
+    const sous = g.items.reduce((t, i) => t + (i.prix || 0), 0);
+    bloc.append(el('h2', { class: 'pour' }, el('span', {}, g.membre ? pastille(g.animal, g.nom, 30) : null, 'Pour ' + g.nom), sous ? el('span', { class: 'discret' }, euros(sous)) : null));
+    g.items.sort((a, b) => (a.achete - b.achete));
+    for (const i of g.items) bloc.append(ligneAOffrir(i));
+  }
+  return bloc;
+}
+
+function ligneAOffrir(i) {
+  const coche = el('button', { class: 'coche' + (i.achete ? ' oui' : ''), 'aria-pressed': i.achete ? 'true' : 'false',
+    'aria-label': i.achete ? 'Acheté' : 'Pas encore acheté',
+    onclick: () => enregistrerSuivi(i, { achete: !i.achete }) }, i.achete ? '✓' : '');
+  const prix = el('input', { class: 'prix', type: 'text', inputmode: 'decimal', placeholder: 'Prix', 'aria-label': 'Prix',
+    value: i.prix != null ? (Number.isInteger(i.prix) ? String(i.prix) : i.prix.toFixed(2).replace('.', ',')) : '' });
+  prix.addEventListener('change', () => {
+    const t = prix.value.trim().replace('€', '').replace(/\s/g, '').replace(',', '.');
+    if (t !== '' && !(Number(t) >= 0)) { toast('Ce prix n\'est pas un nombre'); return; }
+    enregistrerSuivi(i, { prix: t === '' ? '' : Number(t) });
+  });
+  prix.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') prix.blur(); });
+  const url = i.lien && lienSur(i.lien);
+  return el('div', { class: 'ligne' + (i.achete ? ' faite' : '') },
+    coche,
+    el('div', { class: 'ligne-corps' },
+      el('div', { class: 'ligne-titre' }, i.titre),
+      i.genre === 'res'
+        ? el('div', { class: 'ligne-sous' }, 'Sur sa liste', i.precision ? ' · ' + i.precision : '')
+        : el('div', { class: 'ligne-sous' }, 'Ton idée'),
+      i.modifiee_apres ? el('div', { class: 'avis' }, 'Modifiée depuis ta réservation : vérifie la précision.') : null,
+      el('div', { class: 'ligne-actions' },
+        url ? el('a', { href: url, target: '_blank', rel: 'noopener noreferrer' }, domaine(url) + ' ↗') : null,
+        i.genre === 'res'
+          ? el('button', { class: 'btn lien', onclick: () => liberer(i.envie) }, 'Annuler la réservation')
+          : el('button', { class: 'btn lien', onclick: () => supprimerNote(i) }, 'Supprimer'))),
+    prix);
+}
+
+async function enregistrerSuivi(i, champs) {
+  try {
+    if (i.genre === 'res') await appel('suivi', { id: i.id, ...champs });
+    else await appel('note_modifier', { id: i.id, ...champs });
+    await charger();
+  } catch (err) { toast(err.message); }
+}
+
+async function supprimerNote(i) {
+  if (!confirm('Supprimer « ' + i.titre + ' » (pour ' + i.pour + ') ?')) return;
+  try { await appel('note_retirer', { id: i.id }); await charger(); toast('Idée supprimée'); }
+  catch (err) { toast(err.message); }
+}
+
+function formulaireNote() {
+  const noms = new Map();
+  donnees.personnes.filter(p => !p.moi).forEach(p => noms.set(cle(p.prenom), p.prenom));
+  (donnees.notes || []).forEach(n => { if (!noms.has(cle(n.pour))) noms.set(cle(n.pour), n.pour); });
+  const liste = el('datalist', { id: 'noms-pour' }, [...noms.values()].map(n => el('option', { value: n })));
+  const pour = el('input', { type: 'text', maxlength: 40, list: 'noms-pour', placeholder: 'Ex. : Maman', autocomplete: 'off' });
+  const titre = el('input', { type: 'text', maxlength: 80, placeholder: 'Ex. : une écharpe en laine' });
+  const prix = el('input', { type: 'text', inputmode: 'decimal', placeholder: 'Ex. : 25' });
+  const btn = el('button', { class: 'btn', type: 'submit' }, 'Ajouter');
+  const form = el('form', { class: 'form', novalidate: true, onsubmit: async (ev) => {
+    ev.preventDefault();
+    if (!pour.value.trim()) return toast('Il manque pour qui');
+    if (!titre.value.trim()) return toast('Il manque l\'idée');
+    const p = prix.value.trim().replace('€', '').replace(/\s/g, '').replace(',', '.');
+    if (p !== '' && !(Number(p) >= 0)) return toast('Ce prix n\'est pas un nombre');
+    btn.disabled = true;
+    try {
+      await appel('note_ajouter', { pour: pour.value, titre: titre.value, prix: p === '' ? '' : Number(p) });
+      edition = null; await charger(); toast('Idée notée');
+    } catch (err) { btn.disabled = false; toast(err.message); }
+  }},
+    el('p', { class: 'discret', style: 'margin-bottom:4px' }, 'Pour n\'importe qui, du groupe ou non. Personne d\'autre que toi ne la voit.'),
+    el('label', {}, 'Pour qui'), pour, liste,
+    el('label', {}, 'L\'idée'), titre,
+    el('label', {}, 'Prix ', el('span', { class: 'opt' }, '(facultatif, en €)')), prix,
+    el('div', { class: 'rangee' },
+      el('button', { class: 'btn second', type: 'button', onclick: () => { edition = null; rendre(); } }, 'Annuler'),
+      btn));
+  setTimeout(() => pour.focus(), 0);
+  return form;
+}
+
+/* Import du fichier exporté par Mes Cadeaux : [{ name, gifts: [{ description, price, bought }] }] */
+function boutonImport(libelle) {
+  const fichier = el('input', { type: 'file', accept: '.json,application/json', style: 'display:none' });
+  fichier.addEventListener('change', async () => {
+    const f = fichier.files && fichier.files[0];
+    fichier.value = '';
+    if (!f) return;
+    let personnes;
+    try { personnes = JSON.parse(await f.text()); } catch (e) { return toast('Ce fichier est illisible'); }
+    if (!Array.isArray(personnes)) return toast('Ce n\'est pas un fichier de Mes Cadeaux');
+    const notes = [];
+    for (const p of personnes) {
+      if (!p || !Array.isArray(p.gifts)) continue;
+      for (const g of p.gifts) {
+        if (!g || !String(g.description || '').trim()) continue;
+        notes.push({ pour: String(p.name || '?').slice(0, 40), titre: String(g.description).slice(0, 80),
+                     prix: typeof g.price === 'number' && g.price > 0 ? g.price : '', achete: !!g.bought });
+      }
+    }
+    if (!notes.length) return toast('Aucune idée de cadeau dans ce fichier');
+    if (!confirm(notes.length + (notes.length > 1 ? ' idées' : ' idée') + ' de cadeau à importer dans « À offrir ». On y va ?')) return;
+    try {
+      const r = await appel('importer', { notes });
+      vue = 'offrir'; await charger();
+      toast(r.nb + (r.nb > 1 ? ' idées importées' : ' idée importée'));
+    } catch (err) { toast(err.message); }
+  });
+  return el('div', { style: 'text-align:center;margin-top:6px' }, fichier,
+    el('button', { class: 'btn second', onclick: () => fichier.click() }, libelle));
+}
+
+/* Choix de l'animal : un par personne dans le groupe */
+function vueAnimal() {
+  const moiP = donnees.personnes.find(p => p.moi);
+  const pris = {};
+  donnees.personnes.forEach(p => { if (p.animal && !p.moi) pris[p.animal] = p.prenom; });
+  const bloc = el('div');
+  bloc.append(el('h1', {}, 'Choisis ton animal'));
+  bloc.append(el('p', { class: 'chapo' }, 'Il te représentera auprès des autres, dans les onglets et au tirage. Un seul par personne : ceux déjà pris sont grisés.'));
+  const grille = el('div', { class: 'animaux' });
+  for (const [id, nom] of ANIMAUX) {
+    const a = el('button', { class: 'animal', 'aria-pressed': moiP && moiP.animal === id ? 'true' : 'false', disabled: !!pris[id],
+      onclick: async () => {
+        try { await appel('mon_animal', { animal: id }); vue = 'moi'; await charger(); toast(nom + ', c\'est noté !'); }
+        catch (err) { toast(err.message); await charger(); }
+      }},
+      el('img', { src: 'animaux/' + id + '.png', alt: '' }), nom,
+      pris[id] ? el('span', { class: 'pris' }, pris[id]) : null);
+    a.style.background = moiP && moiP.animal === id ? '' : FOND[id];
+    grille.append(a);
+  }
+  bloc.append(grille);
+  bloc.append(el('button', { class: 'btn lien', onclick: () => { vue = 'moi'; rendre(); } }, moiP && moiP.animal ? '← Garder le mien' : 'Plus tard'));
   return bloc;
 }
 
@@ -692,6 +1023,12 @@ function vueReglages() {
   bloc.append(el('div', { class: 'reglage' },
     el('p', {}, el('strong', {}, 'Inviter quelqu\'un'), el('br'), el('span', { class: 'discret' }, 'Envoie ce lien à une personne du groupe : elle choisira son prénom en l\'ouvrant.')),
     el('button', { class: 'btn', onclick: inviter }, 'Partager le lien')));
+
+  bloc.append(el('div', { class: 'reglage', style: 'display:flex;align-items:center;gap:14px' },
+    pastille(moiP && moiP.animal, moiP && moiP.prenom, 52),
+    el('div', { style: 'flex:1' }, el('strong', {}, 'Mon animal'), el('br'),
+      el('span', { class: 'discret' }, moiP && moiP.animal ? NOM_ANIMAL[moiP.animal] : 'Pas encore choisi')),
+    el('button', { class: 'btn second', onclick: () => { vue = 'animal'; rendre(); } }, moiP && moiP.animal ? 'Changer' : 'Choisir')));
 
   const champPrenom = el('input', { type: 'text', maxlength: 20, value: moiP ? moiP.prenom : '' });
   bloc.append(el('form', { class: 'reglage', onsubmit: async (ev) => {
@@ -708,13 +1045,19 @@ function vueReglages() {
 
   bloc.append(el('div', { class: 'reglage' },
     el('p', {}, el('strong', {}, 'Mon lien de secours'), el('br'),
-      el('span', { class: 'discret' }, 'Range-le parmi tes mots de passe. Sur un nouveau téléphone, installe Sorpresa, ouvre-la et colle-le : tu retrouves ta liste'
-        + (moi.admin ? ' et la gestion du groupe' : '') + '. Il te représente : ne le donne à personne.')),
+      el('span', { class: 'discret' }, 'Range-le parmi tes mots de passe. Sur un nouveau téléphone, installe La Casquette, ouvre-la et colle-le : tu retrouves '
+        + (etat.groupes.length > 1 ? 'tes ' + etat.groupes.length + ' groupes' : 'ta liste') + (cleGestion() ? (etat.groupes.length > 1 ? ' et leur gestion' : ' et sa gestion') : '')
+        + '. Il te représente : ne le donne à personne. Si tu rejoins un autre groupe, copie-le à nouveau.')),
     el('button', { class: 'btn second', onclick: async () => {
       const url = lienSecours();
       try { await navigator.clipboard.writeText(url); toast('Lien de secours copié'); }
       catch (e) { prompt('Copie ton lien de secours :', url); }
     }}, 'Copier mon lien de secours')));
+
+  bloc.append(el('div', { class: 'reglage' },
+    el('p', {}, el('strong', {}, 'Importer depuis Mes Cadeaux'), el('br'),
+      el('span', { class: 'discret' }, 'Dans Mes Cadeaux, exporte ta liste, puis choisis ici le fichier obtenu. Tes idées arrivent dans « À offrir », visibles par toi seule.')),
+    boutonImport('Choisir le fichier')));
 
   if (moi.admin && d.admin) bloc.append(blocGestion());
 
@@ -748,7 +1091,8 @@ function blocGestion() {
   );
   appel('membres').then(r => {
     liste.replaceChildren(...r.membres.map(m => el('div', { class: 'membre' },
-      el('div', {}, m.prenom + (m.moi ? ' (toi)' : ''),
+      pastille(m.animal, m.prenom, 34),
+      el('div', { style: 'flex:1' }, m.prenom + (m.moi ? ' (toi)' : ''),
         el('div', { class: 'discret' }, 'Arrivée le ' + new Date(m.arrivee).toLocaleDateString('fr-BE') + (m.parrain ? ', invitée par ' + m.parrain : ''))),
       m.moi ? null : el('button', { class: 'btn lien', onclick: () => retirerMembre(m) }, 'Retirer'))));
   }).catch(err => liste.replaceChildren(el('p', { class: 'discret' }, err.message)));
@@ -757,9 +1101,9 @@ function blocGestion() {
 
 async function inviter() {
   const url = lienInvitation();
-  const texte = 'Rejoins notre groupe Sorpresa pour partager nos listes d\'envies :';
+  const texte = 'Rejoins notre groupe sur La Casquette pour partager nos listes d\'envies :';
   if (navigator.share) {
-    try { await navigator.share({ title: 'Sorpresa', text: texte, url }); return; }
+    try { await navigator.share({ title: 'La Casquette', text: texte, url }); return; }
     catch (e) { if (e.name === 'AbortError') return; }
   }
   try { await navigator.clipboard.writeText(url); toast('Lien copié'); }
@@ -784,12 +1128,12 @@ async function retirerMembre(m) {
 
 async function quitter() {
   const msg = moi.admin
-    ? 'Quitter le groupe ? Tu le gères : sans toi, plus personne ne pourra le gérer.'
+    ? 'Quitter le groupe' + (moi.nom ? ' « ' + moi.nom + ' »' : '') + ' ? Tu le gères : sans toi, plus personne ne pourra le gérer.'
     : 'Quitter le groupe ? Ta liste et tes réservations seront effacées.';
   if (!confirm(msg)) return;
   try { await appel('quitter'); } catch (err) { if (err.statut !== 403) return toast(err.message); }
-  oublier(); moi = null; donnees = null;
-  ecranAccueil();
+  oublier(); donnees = null;
+  if (moi) { choisirGroupe(etat.actif); toast('Tu as quitté ce groupe'); } else ecranAccueil();
 }
 
 /* ---------- Démarrage ---------- */
@@ -798,9 +1142,10 @@ function demarrer() {
   if (h.get('s')) return restaurer(h.get('s'));
   const g = h.get('g');
   if (g && /^[0-9a-f]{18}$/.test(g)) {
-    if (moi && moi.g === g && moi.m) {
+    const i = etat.groupes.findIndex(x => x.g === g);
+    if (i >= 0) {
       history.replaceState(null, '', location.pathname + location.search);
-      return charger();
+      return choisirGroupe(i);
     }
     return ecranRejoindre(g, (h.get('p') || '').replace(/[^0-9a-f]/g, '').slice(0, 10));
   }

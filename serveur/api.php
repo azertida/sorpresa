@@ -1,6 +1,6 @@
 <?php
 /*
- * Sorpresa — petit serveur des listes d'envies entre proches
+ * La Casquette (ex-Sorpresa) — petit serveur des listes d'envies entre proches
  *
  * Principes (repris de Grazie v2) :
  *  - un « groupe » = un code secret partagé par lien ; sans code, on ne voit rien ;
@@ -14,6 +14,9 @@
  *  - si quelqu'un retire une envie déjà réservée, celle ou celui qui l'avait réservée
  *    le voit (« Retirée ») jusqu'à ce qu'elle ou il le note comme vu ;
  *  - rien ne s'efface tout seul : une envie reste tant qu'on ne la retire pas ;
+ *  - chacun peut aussi tenir des NOTES PRIVÉES (idées de cadeaux, pour quelqu'un du groupe
+ *    ou non, avec prix et « acheté ») et suivre prix et achat de ses réservations :
+ *    tout cela n'est jamais envoyé qu'à la personne qui l'a noté ;
  *  - quitter le groupe (ou en être retiré) efface tout ce qui concerne la personne ;
  *  - aucune adresse IP ni autre trace n'est enregistrée par ce script.
  *
@@ -31,7 +34,14 @@ const MAX_LIEN = 500;
 const MAX_NOM_GROUPE = 40;
 const MAX_MEMBRES_PAR_GROUPE = 30;
 const MAX_ENVIES_PAR_PERSONNE = 60;
-const MAX_REQUETE_OCTETS = 20000;
+const MAX_REQUETE_OCTETS = 200000;          // un import depuis Mes Cadeaux peut compter des dizaines d'idées
+const MAX_NOTES_PAR_PERSONNE = 300;
+const MAX_POUR = 40;
+const MAX_PRIX = 100000;
+/* Les animaux que l'on peut choisir (les images vivent dans l'appli, dossier animaux/). */
+const ANIMAUX = ['poulpe', 'capybara', 'loutre', 'tortue', 'meduse', 'dauphin', 'phoque', 'manchot', 'baleine', 'grenouille', 'raie', 'hippocampe',
+                 'renard', 'herisson', 'ecureuil', 'chouette', 'chat', 'chien', 'abeille', 'panda', 'koala', 'paresseux',
+                 'perroquet', 'paon', 'papillon'];
 
 /* ---------- En-têtes ---------- */
 
@@ -98,6 +108,27 @@ function lien_valide($valeur): string {
     return $l;
 }
 
+/* Un prix facultatif, en euros : nombre positif, ou rien. */
+function prix_valide($valeur): ?float {
+    if ($valeur === null || $valeur === '') return null;
+    if (is_string($valeur)) $valeur = str_replace([',', ' ', '€'], ['.', '', ''], $valeur);
+    if (!is_numeric($valeur)) erreur('Ce prix n\'est pas un nombre');
+    $p = round((float)$valeur, 2);
+    if ($p < 0 || $p > MAX_PRIX) erreur('Ce prix semble étrange');
+    return $p;
+}
+
+/* Un animal facultatif, pris dans la liste, et pas déjà choisi par quelqu'un d'autre du groupe. */
+function animal_valide(PDO $db, string $groupe, $valeur, string $sauf = ''): string {
+    $a = (string)($valeur ?? '');
+    if ($a === '') return '';
+    if (!in_array($a, ANIMAUX, true)) erreur('Animal inconnu');
+    $st = $db->prepare('SELECT 1 FROM membres WHERE groupe = ? AND animal = ? AND id <> ?');
+    $st->execute([$groupe, $a, $sauf]);
+    if ($st->fetchColumn()) erreur('Cet animal vient d\'être choisi par quelqu\'un d\'autre', 409);
+    return $a;
+}
+
 function aujourdhui(): string { return date('Y-m-d'); }
 function maintenant(): string { return date('Y-m-d H:i:s'); }
 
@@ -147,7 +178,24 @@ function base(): PDO {
             retiree     TEXT NOT NULL DEFAULT \'\'    -- date du retrait d\'une envie réservée
         );
         CREATE INDEX IF NOT EXISTS idx_envies ON envies(groupe, membre);
+        CREATE TABLE IF NOT EXISTS notes (
+            id          TEXT PRIMARY KEY,
+            groupe      TEXT NOT NULL REFERENCES groupes(code) ON DELETE CASCADE,
+            membre      TEXT NOT NULL,               -- à qui est cette note (seule personne à la voir)
+            pour        TEXT NOT NULL,               -- pour qui est le cadeau (prénom libre)
+            titre       TEXT NOT NULL,
+            prix        REAL,
+            achete      INTEGER NOT NULL DEFAULT 0,
+            cree        TEXT NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_notes ON notes(groupe, membre);
     ');
+    // Suivi privé des réservations : prix et « acheté », vus seulement par qui a réservé.
+    $cols = array_column($db->query('PRAGMA table_info(envies)')->fetchAll(), 'name');
+    if (!in_array('res_prix', $cols, true))   $db->exec('ALTER TABLE envies ADD COLUMN res_prix REAL');
+    if (!in_array('res_achete', $cols, true)) $db->exec('ALTER TABLE envies ADD COLUMN res_achete INTEGER NOT NULL DEFAULT 0');
+    $cm = array_column($db->query('PRAGMA table_info(membres)')->fetchAll(), 'name');
+    if (!in_array('animal', $cm, true)) $db->exec('ALTER TABLE membres ADD COLUMN animal TEXT NOT NULL DEFAULT \'\'');
     return $db;
 }
 
@@ -196,7 +244,8 @@ function effacer_membre(PDO $db, string $groupe, string $id): void {
     $st->execute([$groupe, $id]);
     foreach ($st->fetchAll() as $e) retirer_envie($db, $e, $e['prenom']);
     $db->prepare('DELETE FROM envies WHERE groupe = ? AND res_membre = ? AND retiree <> \'\'')->execute([$groupe, $id]);
-    $db->prepare('UPDATE envies SET res_membre = \'\', res_date = \'\' WHERE groupe = ? AND res_membre = ?')->execute([$groupe, $id]);
+    $db->prepare('UPDATE envies SET res_membre = \'\', res_date = \'\', res_prix = NULL, res_achete = 0 WHERE groupe = ? AND res_membre = ?')->execute([$groupe, $id]);
+    $db->prepare('DELETE FROM notes WHERE groupe = ? AND membre = ?')->execute([$groupe, $id]);
     $db->prepare('DELETE FROM membres WHERE groupe = ? AND id = ?')->execute([$groupe, $id]);
     // Un groupe dont la dernière personne est partie disparaît avec tout son contenu.
     $db->prepare('DELETE FROM groupes WHERE code = ? AND NOT EXISTS (SELECT 1 FROM membres WHERE groupe = ?)')->execute([$groupe, $groupe]);
@@ -280,10 +329,11 @@ try {
                 if (alias($code, $mid) === $alias_parrain) { $parrain = $mid; break; }
             }
         }
+        $animal = animal_valide($db, $code, $entree['animal'] ?? '');
         $id = aleatoire(6);
         $jeton = aleatoire(16);
-        $db->prepare('INSERT INTO membres (id, groupe, prenom, jeton_hash, arrivee, parrain) VALUES (?, ?, ?, ?, ?, ?)')
-           ->execute([$id, $code, $prenom, empreinte($jeton), aujourdhui(), $parrain]);
+        $db->prepare('INSERT INTO membres (id, groupe, prenom, jeton_hash, arrivee, parrain, animal) VALUES (?, ?, ?, ?, ?, ?, ?)')
+           ->execute([$id, $code, $prenom, empreinte($jeton), aujourdhui(), $parrain, $animal]);
         repondre(['m' => $id, 'j' => $jeton]);
     }
 
@@ -294,13 +344,13 @@ try {
 
         /* ----- Tout ce que ce téléphone a le droit de voir ----- */
         case 'liste':
-            $st = $db->prepare('SELECT id, prenom FROM membres WHERE groupe = ? ORDER BY prenom COLLATE NOCASE');
+            $st = $db->prepare('SELECT id, prenom, animal FROM membres WHERE groupe = ? ORDER BY prenom COLLATE NOCASE');
             $st->execute([$code]);
             $personnes = [];
             $prenoms = [];
             foreach ($st->fetchAll() as $p) {
                 $prenoms[$p['id']] = $p['prenom'];
-                $personnes[] = ['p' => alias($code, $p['id']), 'prenom' => $p['prenom'], 'moi' => $p['id'] === $moi['id']];
+                $personnes[] = ['p' => alias($code, $p['id']), 'prenom' => $p['prenom'], 'animal' => $p['animal'], 'moi' => $p['id'] === $moi['id']];
             }
 
             $st = $db->prepare('SELECT * FROM envies WHERE groupe = ? ORDER BY cree DESC, rowid DESC');
@@ -314,7 +364,8 @@ try {
                     if (!$ma_res) continue;
                     $envies[] = ['id' => $e['id'], 'p' => alias($code, $e['membre']), 'prenom' => $prenoms[$e['membre']] ?? $e['prenom'],
                                  'titre' => $e['titre'], 'precision' => $e['precision'], 'lien' => $e['lien'],
-                                 'retiree' => $e['retiree'], 'ma_reservation' => true];
+                                 'retiree' => $e['retiree'], 'ma_reservation' => true,
+                                 'prix' => $e['res_prix'] !== null ? (float)$e['res_prix'] : null, 'achete' => (int)$e['res_achete'] === 1];
                     continue;
                 }
                 $sortie = ['id' => $e['id'], 'p' => alias($code, $e['membre']), 'titre' => $e['titre'],
@@ -325,10 +376,20 @@ try {
                     $sortie['ma_reservation'] = $ma_res;
                     $sortie['res_prenom'] = $e['res_membre'] !== '' ? ($prenoms[$e['res_membre']] ?? '') : '';
                     $sortie['modifiee_apres'] = $e['res_membre'] !== '' && $e['modifiee'] !== '' && $e['modifiee'] > $e['res_date'];
+                    if ($ma_res) {
+                        $sortie['prix'] = $e['res_prix'] !== null ? (float)$e['res_prix'] : null;
+                        $sortie['achete'] = (int)$e['res_achete'] === 1;
+                    }
                 }
                 $envies[] = $sortie;
             }
-            $rep = ['nom' => $grp['nom'], 'moi' => alias($code, $moi['id']), 'personnes' => $personnes, 'envies' => $envies];
+            $st = $db->prepare('SELECT id, pour, titre, prix, achete FROM notes WHERE groupe = ? AND membre = ? ORDER BY pour COLLATE NOCASE, rowid');
+            $st->execute([$code, $moi['id']]);
+            $notes = array_map(function ($n) {
+                return ['id' => $n['id'], 'pour' => $n['pour'], 'titre' => $n['titre'],
+                        'prix' => $n['prix'] !== null ? (float)$n['prix'] : null, 'achete' => (int)$n['achete'] === 1];
+            }, $st->fetchAll());
+            $rep = ['nom' => $grp['nom'], 'moi' => alias($code, $moi['id']), 'personnes' => $personnes, 'envies' => $envies, 'notes' => $notes];
             if (est_admin($grp, $cle_admin)) $rep['admin'] = true;
             repondre($rep);
 
@@ -385,7 +446,7 @@ try {
             if ($e['retiree'] !== '') {
                 $db->prepare('DELETE FROM envies WHERE id = ?')->execute([$e['id']]);
             } else {
-                $db->prepare('UPDATE envies SET res_membre = \'\', res_date = \'\' WHERE id = ?')->execute([$e['id']]);
+                $db->prepare('UPDATE envies SET res_membre = \'\', res_date = \'\', res_prix = NULL, res_achete = 0 WHERE id = ?')->execute([$e['id']]);
             }
             repondre(['ok' => true]);
 
@@ -394,6 +455,68 @@ try {
             $e = envie($db, $code, $entree['id'] ?? '');
             if ($e['res_membre'] !== $moi['id'] || $e['retiree'] === '') erreur('Rien à noter', 403);
             $db->prepare('DELETE FROM envies WHERE id = ?')->execute([$e['id']]);
+            repondre(['ok' => true]);
+
+        /* ----- Prix et « acheté » d'une de ses réservations (privé) ----- */
+        case 'suivi':
+            $e = envie($db, $code, $entree['id'] ?? '');
+            if ($e['res_membre'] !== $moi['id']) erreur('Ce n\'est pas ta réservation', 403);
+            $champs = []; $valeurs = [];
+            if (array_key_exists('prix', $entree))   { $champs[] = 'res_prix = ?';   $valeurs[] = prix_valide($entree['prix']); }
+            if (array_key_exists('achete', $entree)) { $champs[] = 'res_achete = ?'; $valeurs[] = !empty($entree['achete']) ? 1 : 0; }
+            if ($champs) {
+                $valeurs[] = $e['id'];
+                $db->prepare('UPDATE envies SET ' . implode(', ', $champs) . ' WHERE id = ?')->execute($valeurs);
+            }
+            repondre(['ok' => true]);
+
+        /* ----- Notes privées : idées de cadeaux que soi seul voit ----- */
+        case 'note_ajouter':
+        case 'importer':
+            $lot = $action === 'importer' ? ($entree['notes'] ?? null) : [$entree];
+            if (!is_array($lot) || !$lot) erreur('Rien à ajouter');
+            $st = $db->prepare('SELECT COUNT(*) FROM notes WHERE groupe = ? AND membre = ?');
+            $st->execute([$code, $moi['id']]);
+            if ((int)$st->fetchColumn() + count($lot) > MAX_NOTES_PAR_PERSONNE) erreur('Ça fait beaucoup de notes');
+            $propres = [];
+            foreach ($lot as $n) {
+                if (!is_array($n)) erreur('Note illisible');
+                $pour = texte($n['pour'] ?? '', MAX_POUR);
+                $titre = texte($n['titre'] ?? '', MAX_TITRE);
+                if ($pour === '') erreur('Il manque pour qui');
+                if ($titre === '') erreur('Il manque l\'idée');
+                $propres[] = [$pour, $titre, prix_valide($n['prix'] ?? null), !empty($n['achete']) ? 1 : 0];
+            }
+            $ins = $db->prepare('INSERT INTO notes (id, groupe, membre, pour, titre, prix, achete, cree) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+            $db->beginTransaction();
+            foreach ($propres as [$pour, $titre, $prix, $achete]) {
+                $ins->execute([aleatoire(8), $code, $moi['id'], $pour, $titre, $prix, $achete, aujourdhui()]);
+            }
+            $db->commit();
+            repondre(['ok' => true, 'nb' => count($propres)]);
+
+        case 'note_modifier':
+            $st = $db->prepare('SELECT * FROM notes WHERE id = ? AND groupe = ? AND membre = ?');
+            $st->execute([(string)($entree['id'] ?? ''), $code, $moi['id']]);
+            $n = $st->fetch();
+            if (!$n) erreur('Cette note n\'existe plus', 404);
+            $pour = array_key_exists('pour', $entree) ? texte($entree['pour'], MAX_POUR) : $n['pour'];
+            $titre = array_key_exists('titre', $entree) ? texte($entree['titre'], MAX_TITRE) : $n['titre'];
+            if ($pour === '' || $titre === '') erreur('Il manque l\'idée ou pour qui');
+            $prix = array_key_exists('prix', $entree) ? prix_valide($entree['prix']) : $n['prix'];
+            $achete = array_key_exists('achete', $entree) ? (!empty($entree['achete']) ? 1 : 0) : (int)$n['achete'];
+            $db->prepare('UPDATE notes SET pour = ?, titre = ?, prix = ?, achete = ? WHERE id = ?')->execute([$pour, $titre, $prix, $achete, $n['id']]);
+            repondre(['ok' => true]);
+
+        case 'note_retirer':
+            $st = $db->prepare('DELETE FROM notes WHERE id = ? AND groupe = ? AND membre = ?');
+            $st->execute([(string)($entree['id'] ?? ''), $code, $moi['id']]);
+            repondre(['ok' => true]);
+
+        /* ----- Choisir (ou changer) son animal ----- */
+        case 'mon_animal':
+            $a = animal_valide($db, $code, $entree['animal'] ?? '', $moi['id']);
+            $db->prepare('UPDATE membres SET animal = ? WHERE id = ?')->execute([$a, $moi['id']]);
             repondre(['ok' => true]);
 
         /* ----- Changer son prénom ----- */
@@ -411,12 +534,12 @@ try {
         /* ----- Gestion : qui est dans le groupe ----- */
         case 'membres':
             if (!est_admin($grp, $cle_admin)) erreur('Réservé à la personne qui gère le groupe', 403);
-            $st = $db->prepare('SELECT m.id, m.prenom, m.arrivee, p.prenom AS parrain_prenom
+            $st = $db->prepare('SELECT m.id, m.prenom, m.animal, m.arrivee, p.prenom AS parrain_prenom
                                 FROM membres m LEFT JOIN membres p ON p.id = m.parrain AND p.groupe = m.groupe
                                 WHERE m.groupe = ? ORDER BY m.arrivee, m.rowid');
             $st->execute([$code]);
             $liste = array_map(function ($m) use ($code, $moi) {
-                return ['p' => alias($code, $m['id']), 'prenom' => $m['prenom'], 'arrivee' => $m['arrivee'],
+                return ['p' => alias($code, $m['id']), 'prenom' => $m['prenom'], 'animal' => $m['animal'], 'arrivee' => $m['arrivee'],
                         'parrain' => $m['parrain_prenom'] ?? '', 'moi' => $m['id'] === $moi['id']];
             }, $st->fetchAll());
             repondre(['membres' => $liste]);
