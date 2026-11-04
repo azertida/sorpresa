@@ -2,7 +2,7 @@
 
 *Anciennement Sorpresa.* En hommage au patriarche et à sa casquette en tweed.
 
-Des listes d'envies entre proches, sans gâcher la surprise.
+Les cadeaux en famille, sans gâcher la surprise.
 
 1. **Ajoute tes envies** : un titre, une précision, un lien si tu veux.
 2. **Réserve ce que tu offres** dans les listes des autres. Seuls les autres le voient, jamais la personne concernée.

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>La Casquette</title>
-<meta name="description" content="Des listes d'envies entre proches, sans gâcher la surprise.">
+<meta name="description" content="Les cadeaux en famille, sans gâcher la surprise.">
 <meta name="theme-color" content="#a3203a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="La Casquette">
@@ -170,8 +170,9 @@ input:focus, textarea:focus { outline: 2px solid var(--ruban); outline-offset: 1
 .vide { text-align: center; color: var(--doux); padding: 34px 10px; }
 .vide .grand { font-size: 2.2rem; margin-bottom: 6px; }
 
-ol.mode { margin: 6px 0 22px 22px; }
-ol.mode li { margin-bottom: 8px; }
+ul.mode { list-style: none; margin: 6px 0 22px; }
+ul.mode li { display: flex; gap: 12px; margin-bottom: 12px; }
+.mode-ic { font-size: 1.4rem; line-height: 1.2; flex: none; }
 
 .reglage { background: var(--carte); border: 1px solid var(--trait); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; }
 .reglage p { margin-bottom: 10px; }
@@ -423,7 +424,7 @@ async function charger() {
 function ecranAccueil() {
   app.replaceChildren(el('div', { class: 'page' },
     el('h1', { style: 'margin-top:48px' }, el('span', { style: 'color:var(--ruban)' }, 'La Casquette')),
-    el('p', { class: 'chapo' }, 'Des listes d\'envies entre proches, sans gâcher la surprise.'),
+    el('p', { class: 'chapo' }, 'Les cadeaux en famille, sans gâcher la surprise.'),
     modeEmploi(),
     formulaireColler(),
     el('button', { class: 'btn second large', onclick: ecranCreer }, 'Créer un groupe'),
@@ -518,11 +519,14 @@ async function restaurer(code) {
 }
 
 function modeEmploi() {
-  return el('ol', { class: 'mode' },
-    el('li', {}, el('strong', {}, 'Ajoute tes envies'), ' : un titre, une précision, un lien si tu veux.'),
-    el('li', {}, el('strong', {}, 'Réserve ce que tu offres'), ' dans les listes des autres. Seuls les autres le voient, jamais la personne concernée.'),
-    el('li', {}, el('strong', {}, 'Quand tu reçois un cadeau'), ', retire-le de ta liste.')
-  );
+  const ligne = (ic, titre, texte) => el('li', {}, el('span', { class: 'mode-ic', 'aria-hidden': 'true' }, ic),
+    el('span', {}, el('strong', {}, titre), ' : ' + texte));
+  return el('div', {},
+    el('ul', { class: 'mode' },
+      ligne('🎁', 'Tes envies', 'note ce qui te ferait plaisir, au détail près, et retire-le quand tu l\'as reçu.'),
+      ligne('🤫', 'Les envies des autres', 'réserve ce que tu offres. Personne ne voit ce qui est réservé sur sa propre liste.'),
+      ligne('🛍️', 'À offrir', 'tes réservations et tes idées pour qui tu veux, avec prix, achats et budget, rien que pour toi.')),
+    el('p', { class: 'discret', style: 'margin:-8px 0 20px' }, 'Un groupe par famille ou bande d\'amis, et un animal pour chacun.'));
 }
 
 function ecranCreer() {
@@ -596,7 +600,7 @@ async function ecranRejoindre(g, parrain) {
   );
   app.replaceChildren(el('div', { class: 'page' },
     el('h1', { style: 'margin-top:40px' }, nom ? 'Tu rejoins « ' + nom + ' »' : 'Tu rejoins un groupe de La Casquette'),
-    el('p', { class: 'chapo' }, 'Des listes d\'envies entre proches, sans gâcher la surprise.'),
+    el('p', { class: 'chapo' }, 'Les cadeaux en famille, sans gâcher la surprise.'),
     modeEmploi(),
     etat.groupes.length ? el('div', { class: 'principe' }, 'Ce groupe s\'ajoutera à ceux que tu as déjà sur ce téléphone.') : null,
     memoireSeparee() && !etat.groupes.length ? el('div', { class: 'principe' },
