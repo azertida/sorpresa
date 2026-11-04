@@ -1,9 +1,9 @@
 /* La Casquette — service worker : l'appli s'ouvre même hors connexion,
    et se met à jour d'elle-même (le réseau d'abord, la copie en secours).
    Les échanges avec le serveur ne sont jamais mis en cache. */
-const VERSION = 'casquette-6';
+const VERSION = 'casquette-7';
 const FICHIERS = ['./', './index.html', './manifest.webmanifest',
-  './icones/icon-192.png', './icones/icon-512.png', './icones/apple-touch-icon.png', './icones/favicon-32.png'];
+  './icones/casquette-icon-192.png', './icones/casquette-icon-512.png', './icones/casquette-apple-touch-icon.png', './icones/casquette-favicon-32.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(FICHIERS)).then(() => self.skipWaiting()));
