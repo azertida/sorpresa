@@ -251,7 +251,7 @@ function base(): PDO {
             tirage      TEXT NOT NULL REFERENCES tirages(id) ON DELETE CASCADE,
             donneur     TEXT NOT NULL,               -- membre qui offre
             receveur    TEXT NOT NULL,               -- membre à qui il offre (vide s\'il a quitté le groupe)
-            prenom      TEXT NOT NULL,               -- prénom de la personne à qui l'on offre, au moment du tirage
+            prenom      TEXT NOT NULL,               -- prénom de la personne à qui on offre, au moment du tirage
             PRIMARY KEY (tirage, donneur)
         );
     ');
